@@ -4,56 +4,14 @@ import { motion, Variants } from "framer-motion";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const projects = [
-    {
-        title: "EcoTrack Dashboard",
-        description: "A comprehensive analytics platform for sustainability metrics, featuring real-time data visualization and automated reporting.",
-        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
-        tags: ["React", "TypeScript", "Tailwind CSS", "Recharts"],
-        link: "#",
-        github: "#"
-    },
-    {
-        title: "NexGen E-Commerce",
-        description: "High-performance headless e-commerce solution with dynamic inventory management and AI-powered product recommendations.",
-        image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800",
-        tags: ["Next.js", "Stripe", "PostgreSQL", "Prisma"],
-        link: "#",
-        github: "#"
-    },
-    {
-        title: "SecureVault API",
-        description: "Enterprise-grade secure document storage and sharing API with end-to-end encryption and granular access controls.",
-        image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=800",
-        tags: ["Node.js", "Express", "MongoDB", "AWS S3"],
-        link: "#",
-        github: "#"
-    },
-    {
-        title: "HealthSync Mobile",
-        description: "Cross-platform mobile application for patient health monitoring, appointment scheduling, and telemedicine consultations.",
-        image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800",
-        tags: ["React Native", "Firebase", "Redux", "WebRTC"],
-        link: "#",
-        github: "#"
-    },
-    {
-        title: "SmartCity IoT Hub",
-        description: "Centralized control dashboard for smart city infrastructure, monitoring traffic, energy usage, and environmental sensors in real-time.",
-        image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800",
-        tags: ["Vue.js", "Python", "MQTT", "TimescaleDB"],
-        link: "#",
-        github: "#"
-    },
-    {
-        title: "FinServe Portal",
-        description: "Modern banking portal with advanced financial analysis tools, portfolio tracking, and automated investment strategies.",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
-        tags: ["React", "Go", "GraphQL", "Docker"],
-        link: "#",
-        github: "#"
-    }
-];
+const projects: Array<{
+    title: string;
+    description: string;
+    image: string;
+    tags: string[];
+    link: string;
+    github: string;
+}> = [];
 
 export default function Projects() {
     const containerVariants: Variants = {
@@ -94,58 +52,77 @@ export default function Projects() {
                     </p>
                 </motion.div>
 
-                <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="show"
-                >
-                    {projects.map((project, idx) => (
-                        <motion.div
-                            key={idx}
-                            variants={itemVariants}
-                            whileHover={{ y: -8 }}
-                            className="glass-panel rounded-2xl overflow-hidden flex flex-col interactive-card group border-glow"
-                        >
-                            <div className="relative h-56 overflow-hidden">
-                                <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors duration-300 z-10" />
-                                <img
-                                    src={project.image}
-                                    alt={project.title}
-                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                                />
-                            </div>
-
-                            <div className="p-6 flex flex-col flex-1 relative bg-gradient-to-b from-card/40 to-card/80">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                <h3 className="font-display text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">
-                                    {project.title}
-                                </h3>
-                                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">
-                                    {project.description}
-                                </p>
-
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    {project.tags.map(tag => (
-                                        <span key={tag} className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground border border-border/50">
-                                            {tag}
-                                        </span>
-                                    ))}
+                {projects.length > 0 ? (
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="show"
+                    >
+                        {projects.map((project, idx) => (
+                            <motion.div
+                                key={idx}
+                                variants={itemVariants}
+                                whileHover={{ y: -8 }}
+                                className="glass-panel rounded-2xl overflow-hidden flex flex-col interactive-card group border-glow"
+                            >
+                                <div className="relative h-56 overflow-hidden">
+                                    <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors duration-300 z-10" />
+                                    <img
+                                        loading="lazy"
+                                        src={project.image}
+                                        alt={project.title}
+                                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                                    />
                                 </div>
 
-                                <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border/50">
-                                    <Button variant="default" size="sm" className="flex-1 box-glow bg-primary hover:bg-primary/90 text-primary-foreground">
-                                        View Project <ExternalLink size={14} className="ml-2" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" className="glass-panel border-glow hover:bg-primary/10 hover:text-primary transition-colors">
-                                        <Github size={18} />
-                                    </Button>
+                                <div className="p-6 flex flex-col flex-1 relative bg-gradient-to-b from-card/40 to-card/80">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                    <h3 className="font-display text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">
+                                        {project.title}
+                                    </h3>
+                                    <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">
+                                        {project.description}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2 mb-6">
+                                        {project.tags.map(tag => (
+                                            <span key={tag} className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground border border-border/50">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border/50">
+                                        <Button variant="default" size="sm" className="flex-1 box-glow bg-primary hover:bg-primary/90 text-primary-foreground">
+                                            View Project <ExternalLink size={14} className="ml-2" />
+                                        </Button>
+                                        <Button variant="outline" size="icon" className="glass-panel border-glow hover:bg-primary/10 hover:text-primary transition-colors">
+                                            <Github size={18} />
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="glass-panel p-16 text-center rounded-3xl border-dashed border-2 border-primary/20 max-w-3xl mx-auto shadow-[0_0_30px_hsl(187_80%_50%_/_0.05)]"
+                    >
+                        <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-8 relative">
+                            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                            <span className="text-4xl relative z-10">🚀</span>
+                        </div>
+                        <h2 className="font-display text-3xl font-bold text-foreground mb-4">Amazing Projects Incoming!</h2>
+                        <p className="text-muted-foreground text-lg leading-relaxed max-w-lg mx-auto">
+                            We are currently curating our latest and greatest completed projects to showcase here. Check back soon for actual client implementations!
+                        </p>
+                    </motion.div>
+                )}
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

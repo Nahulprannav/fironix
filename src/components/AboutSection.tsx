@@ -1,8 +1,7 @@
-import { Award, Code, Users, Zap } from "lucide-react";
+import { Award, Users, Zap } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
 const stats = [
-  { icon: Code, value: "100+", label: "Projects Completed" },
   { icon: Users, value: "50+", label: "Happy Clients" },
   { icon: Award, value: "5+", label: "Years Experience" },
   { icon: Zap, value: "24/7", label: "Support" },
@@ -48,9 +47,9 @@ export default function AboutSection() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16 max-w-4xl mx-auto"
           >
-            {stats.map((stat, i) => (
+            {stats.map((stat) => (
               <motion.div
                 key={stat.label}
                 variants={fadeUp}
