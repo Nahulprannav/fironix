@@ -47,7 +47,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-5">
           {links.map((link) => (
             <NavLink
               key={link.href}
@@ -58,6 +58,12 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
+          <Link
+            to="/admin/login"
+            className="ml-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/60 transition-all backdrop-blur-sm bg-secondary/30"
+          >
+            Login
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -99,7 +105,19 @@ export default function Navbar() {
                   </NavLink>
                 </motion.div>
               ))}
-            </div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: links.length * 0.05 }}
+              >
+                <Link
+                  to="/admin/login"
+                  onClick={() => setOpen(false)}
+                  className="block w-full text-left py-3 text-sm font-semibold text-muted-foreground/70 transition-all hover:text-primary hover:translate-x-2"
+                >
+                  🔐 Admin Login
+                </Link>
+              </motion.div>            </div>
           </motion.div>
         )}
       </AnimatePresence>

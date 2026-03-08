@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Code, Shield, Brain, BarChart, Gamepad, Camera, Video, PenTool, Sparkles, Cloud, Smartphone, Zap } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import RegistrationModal from "@/components/RegistrationModal";
 
 const courses = [
     {
@@ -129,6 +131,14 @@ const courses = [
 ] as const;
 
 export default function Courses() {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState("");
+
+    const openModal = (title: string) => {
+        setSelectedCourse(title);
+        setModalOpen(true);
+    };
+
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
@@ -179,7 +189,7 @@ export default function Courses() {
                                     <div className="flex-1">
                                         <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{course.title}</h2>
                                         <p className="text-xl text-muted-foreground leading-relaxed mb-6">{course.desc}</p>
-                                        <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full">
+                                        <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => openModal(course.title)}>
                                             Register for Course
                                         </Button>
                                     </div>
@@ -210,6 +220,13 @@ export default function Courses() {
                 </div>
             </main>
             <Footer />
+
+            <RegistrationModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                type="course"
+                selection={selectedCourse}
+            />
         </div>
     );
 }

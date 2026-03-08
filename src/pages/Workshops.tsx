@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Calendar, Clock, MapPin, Users, Zap } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import RegistrationModal from "@/components/RegistrationModal";
 
 const WORKSHOPS = [
     {
@@ -13,7 +15,7 @@ const WORKSHOPS = [
         location: "Virtual & Fironix HQ",
         seats: 40,
         type: "Advanced",
-        color: "hsl(187 80% 50%)", // Primary
+        color: "hsl(187 80% 50%)",
         colorClass: "text-primary bg-primary/10 border-primary/20"
     },
     {
@@ -24,7 +26,7 @@ const WORKSHOPS = [
         location: "Virtual Only",
         seats: 100,
         type: "Intermediate",
-        color: "hsl(40 90% 55%)", // Accent
+        color: "hsl(40 90% 55%)",
         colorClass: "text-accent bg-accent/10 border-accent/20"
     },
     {
@@ -35,7 +37,7 @@ const WORKSHOPS = [
         location: "Virtual Only",
         seats: 250,
         type: "Advanced",
-        color: "hsl(210 100% 60%)", // Blue
+        color: "hsl(210 100% 60%)",
         colorClass: "text-blue-400 bg-blue-500/10 border-blue-500/20"
     },
     {
@@ -46,12 +48,20 @@ const WORKSHOPS = [
         location: "Virtual & Fironix HQ",
         seats: 50,
         type: "Beginner",
-        color: "hsl(320 80% 55%)", // Pink
+        color: "hsl(320 80% 55%)",
         colorClass: "text-pink-400 bg-pink-500/10 border-pink-500/20"
     }
 ];
 
 export default function Workshops() {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedWorkshop, setSelectedWorkshop] = useState("");
+
+    const openModal = (title: string) => {
+        setSelectedWorkshop(title);
+        setModalOpen(true);
+    };
+
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.15 } }
@@ -95,7 +105,6 @@ export default function Workshops() {
                             variants={itemVariants}
                             className="interactive-card glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden group border-glow"
                         >
-                            {/* Accent line on left */}
                             <div className="absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 group-hover:w-2" style={{ backgroundColor: workshop.color }} />
 
                             <div className="flex-1">
@@ -132,7 +141,11 @@ export default function Workshops() {
                                     <span className="block text-2xl font-bold text-foreground">Free</span>
                                     <span className="text-xs text-muted-foreground">Community Pass</span>
                                 </div>
-                                <Button size="lg" className="w-full box-glow hover:-translate-y-1 transition-transform rounded-full">
+                                <Button
+                                    size="lg"
+                                    className="w-full box-glow hover:-translate-y-1 transition-transform rounded-full"
+                                    onClick={() => openModal(workshop.title)}
+                                >
                                     Register Now
                                 </Button>
                             </div>
@@ -142,6 +155,13 @@ export default function Workshops() {
             </main>
 
             <Footer />
+
+            <RegistrationModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                type="workshop"
+                selection={selectedWorkshop}
+            />
         </div>
     );
 }
