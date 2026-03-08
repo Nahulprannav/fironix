@@ -1,6 +1,7 @@
 import { Code, Database, Globe, GraduationCap, Megaphone, Palette } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { motion, Variants } from "framer-motion";
 
 const services = [
   {
@@ -42,27 +43,57 @@ const services = [
 ] as const;
 
 export default function Services() {
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50, damping: 15 } }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col pt-24">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-0 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+
       <Navbar />
-      <section className="py-24 px-4">
+      <main className="flex-1 py-12 px-4 relative z-10">
         <div className="container mx-auto max-w-7xl">
-          <div className="section-shell p-8 md:p-12">
-            <div className="text-center mb-16">
+          <div className="section-shell p-8 md:p-12 relative overflow-hidden">
+            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-primary/10 rounded-full blur-[80px]" />
+
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16 relative z-10"
+            >
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-4 gradient-text">Our Services</h1>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                 Comprehensive technology solutions and services to empower your business and drive innovation.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service) => (
-                <div key={service.title} className="interactive-card glass-panel group p-8 rounded-2xl">
-                  <div className="mb-6 inline-flex p-4 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10"
+            >
+              {services.map((service, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={itemVariants}
+                  whileHover={{ y: -5 }}
+                  className="interactive-card glass-panel group p-8 rounded-2xl border-glow flex flex-col"
+                >
+                  <div className="mb-6 inline-flex p-4 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-[0_0_15px_hsl(187_80%_50%_/_0.2)]">
                     <service.icon size={32} />
                   </div>
-                  <h3 className="font-display text-xl font-semibold mb-4 text-foreground">{service.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">{service.desc}</p>
+                  <h3 className="font-display text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">{service.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{service.desc}</p>
                   <div className="flex flex-wrap gap-2">
                     {service.features.map((feature) => (
                       <span key={feature} className="px-3 py-1 text-xs rounded-full bg-secondary/50 text-secondary-foreground border border-border">
@@ -70,12 +101,12 @@ export default function Services() {
                       </span>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </main>
       <Footer />
     </div>
   );
