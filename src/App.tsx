@@ -6,6 +6,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 const About = lazy(() => import("./pages/About"));
+const AdminLogin = lazy(() => import("./pages/admin/Login"));
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const Blog = lazy(() => import("./pages/Blog"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Courses = lazy(() => import("./pages/Courses"));
 const Index = lazy(() => import("./pages/Index"));
@@ -17,6 +20,7 @@ const Services = lazy(() => import("./pages/Services"));
 const ServiceDetails = lazy(() => import("./pages/ServiceDetails"));
 const Team = lazy(() => import("./pages/Team"));
 const VisionMission = lazy(() => import("./pages/VisionMission"));
+const Workshops = lazy(() => import("./pages/Workshops"));
 
 const queryClient = new QueryClient();
 
@@ -43,8 +47,12 @@ const App = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/portfolio-template" element={<PortfolioTemplate />} />
             <Route path="/internship" element={<Internship />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/workshops" element={<Workshops />} />
             <Route path="/team" element={<Team />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

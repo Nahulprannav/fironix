@@ -12,8 +12,10 @@ const links = [
   { label: "Vision & Mission", href: "/vision-mission" },
   { label: "Services", href: "/services" },
   { label: "Courses", href: "/courses" },
+  { label: "Workshops", href: "/workshops" },
   { label: "Projects", href: "/projects" },
   { label: "Internship", href: "/internship" },
+  { label: "Blog", href: "/blog" },
   { label: "Team", href: "/team" },
   { label: "Contact", href: "/contact" },
 ] as const;

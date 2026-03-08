@@ -27,9 +27,7 @@ export default function VisionMissionSection() {
               innovative digital solutions, advanced IT services, and knowledge-driven education, shaping a smarter and
               more connected future."
             </p>
-            <div className="mt-8 flex justify-center">
-              <img src="/placeholder.svg" alt="Future Technology" className="w-24 h-24 opacity-30" />
-            </div>
+
           </div>
         </div>
       </section>
