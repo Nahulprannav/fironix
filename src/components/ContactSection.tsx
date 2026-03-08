@@ -48,8 +48,14 @@ export default function ContactSection() {
     }
 
     setLoading(true);
+
+    // Construct mailto link
+    const subject = encodeURIComponent(`Contact Request from ${form.name}`);
+    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`);
+    window.location.href = `mailto:ashwini@fironix.in?subject=${subject}&body=${body}`;
+
     submitTimerRef.current = setTimeout(() => {
-      toast({ title: "Message sent!", description: "We will get back to you soon." });
+      toast({ title: "Message prepared!", description: "Your email client has been opened." });
       setForm({ name: "", email: "", message: "" });
       setLoading(false);
       submitTimerRef.current = null;

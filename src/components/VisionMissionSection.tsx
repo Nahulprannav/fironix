@@ -68,9 +68,6 @@ export default function VisionMissionSection() {
                   </div>
                   <h3 className="font-display text-xl font-semibold mb-4 text-foreground">{value.title}</h3>
                   <p className="text-muted-foreground">{value.desc}</p>
-                  <div className="mt-6">
-                    <img src="/placeholder.svg" alt={value.title} className="w-16 h-16 mx-auto opacity-20" />
-                  </div>
                 </div>
               ))}
             </div>

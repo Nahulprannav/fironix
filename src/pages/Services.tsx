@@ -1,4 +1,5 @@
 import { Code, Database, Globe, GraduationCap, Megaphone, Palette } from "lucide-react";
+import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
@@ -7,36 +8,42 @@ const services = [
   {
     icon: Code,
     title: "IT & Software Services",
+    slug: "it-software",
     desc: "Custom Software Development, Computer Programming Services, Software Testing and Maintenance, IT Consulting and Technology Solutions, Computer System Design and Development.",
     features: ["Custom Development", "System Design", "Quality Assurance", "IT Consulting"],
   },
   {
     icon: Globe,
     title: "Web & Digital Services",
+    slug: "web-digital",
     desc: "Website Design and Development, Web Application Development, Web Hosting Services, Domain and Website Management.",
     features: ["Web Design", "App Development", "Hosting Solutions", "Domain Management"],
   },
   {
     icon: Database,
     title: "Data & Information Services",
+    slug: "data-info",
     desc: "Data Processing Services, Data Entry Services, Database Management, Report Writing and Data Analysis.",
     features: ["Data Processing", "Database Mgmt", "Analytics", "Reporting"],
   },
   {
     icon: Palette,
     title: "Digital Media & Creative Services",
+    slug: "creative-media",
     desc: "Video Production Services, Digital Content Creation, Graphic Design and Specialized Design Services, Branding and Creative Design.",
     features: ["Video Production", "Content Creation", "Graphic Design", "Branding"],
   },
   {
     icon: Megaphone,
     title: "Marketing Services",
+    slug: "marketing",
     desc: "Digital Advertising, Online Marketing Support, Market Research Services, Technical Services.",
     features: ["Digital Ads", "Online Marketing", "Market Research", "Tech Services"],
   },
   {
     icon: GraduationCap,
     title: "Education & Training",
+    slug: "education",
     desc: "Academic Tutoring Services, IT Skill Development Training, Programming and Software Development Training.",
     features: ["Tutoring", "Skill Training", "Programming", "Dev Training"],
   },
@@ -87,20 +94,24 @@ export default function Services() {
                   key={idx}
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
-                  className="interactive-card glass-panel group p-8 rounded-2xl border-glow flex flex-col"
                 >
-                  <div className="mb-6 inline-flex p-4 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-[0_0_15px_hsl(187_80%_50%_/_0.2)]">
-                    <service.icon size={32} />
-                  </div>
-                  <h3 className="font-display text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">{service.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{service.desc}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {service.features.map((feature) => (
-                      <span key={feature} className="px-3 py-1 text-xs rounded-full bg-secondary/50 text-secondary-foreground border border-border">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
+                  <Link
+                    to={`/services/${service.slug}`}
+                    className="interactive-card glass-panel group p-8 rounded-2xl border-glow flex flex-col h-full cursor-pointer"
+                  >
+                    <div className="mb-6 inline-flex p-4 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-[0_0_15px_hsl(187_80%_50%_/_0.2)]">
+                      <service.icon size={32} />
+                    </div>
+                    <h3 className="font-display text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">{service.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{service.desc}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {service.features.map((feature) => (
+                        <span key={feature} className="px-3 py-1 text-xs rounded-full bg-secondary/50 text-secondary-foreground border border-border">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </Link>
                 </motion.div>
               ))}
             </motion.div>

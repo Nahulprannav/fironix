@@ -10,8 +10,8 @@ const links = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Vision & Mission", href: "/vision-mission" },
-  { label: "Domains", href: "/domains" },
   { label: "Services", href: "/services" },
+  { label: "Courses", href: "/courses" },
   { label: "Projects", href: "/projects" },
   { label: "Internship", href: "/internship" },
   { label: "Team", href: "/team" },
@@ -27,10 +27,6 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const openRegistration = () => {
-    window.open(INTERNSHIP_FORM_URL, "_blank", "noopener,noreferrer");
-  };
 
   return (
     <motion.nav
@@ -60,13 +56,6 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
-          <Button
-            size="sm"
-            className="box-glow hover:box-glow-accent transition-all duration-300 hover:-translate-y-0.5 rounded-full px-5"
-            onClick={openRegistration}
-          >
-            Register
-          </Button>
         </div>
 
         {/* Mobile Toggle */}
@@ -108,22 +97,6 @@ export default function Navbar() {
                   </NavLink>
                 </motion.div>
               ))}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: links.length * 0.05 }}
-                className="mt-4"
-              >
-                <Button
-                  className="w-full box-glow transition-transform duration-300 rounded-lg h-11 text-base font-semibold"
-                  onClick={() => {
-                    setOpen(false);
-                    openRegistration();
-                  }}
-                >
-                  Register Now
-                </Button>
-              </motion.div>
             </div>
           </motion.div>
         )}

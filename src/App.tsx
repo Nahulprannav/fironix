@@ -7,13 +7,14 @@ import { lazy, Suspense } from "react";
 
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
-const Domains = lazy(() => import("./pages/Domains"));
+const Courses = lazy(() => import("./pages/Courses"));
 const Index = lazy(() => import("./pages/Index"));
 const Internship = lazy(() => import("./pages/Internship"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PortfolioTemplate = lazy(() => import("./pages/PortfolioTemplate"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Services = lazy(() => import("./pages/Services"));
+const ServiceDetails = lazy(() => import("./pages/ServiceDetails"));
 const Team = lazy(() => import("./pages/Team"));
 const VisionMission = lazy(() => import("./pages/VisionMission"));
 
@@ -36,8 +37,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/vision-mission" element={<VisionMission />} />
-            <Route path="/domains" element={<Domains />} />
+            <Route path="/courses" element={<Courses />} />
             <Route path="/services" element={<Services />} />
+            <Route path="/services/:id" element={<ServiceDetails />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/portfolio-template" element={<PortfolioTemplate />} />
             <Route path="/internship" element={<Internship />} />
