@@ -39,7 +39,10 @@ export default function AdminLogin() {
             toast.success("Welcome back, Admin!");
             navigate("/admin/dashboard");
         } catch {
-            toast.error("Cannot reach the API server. Make sure 'node server/index.js' is running.");
+            toast.error(
+                "⚠️ API server offline. Open a second terminal and run: npm run server",
+                { duration: 8000 }
+            );
         } finally {
             setLoading(false);
         }

@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import RegistrationModal from "@/components/RegistrationModal";
+import { useNavigate } from "react-router-dom";
 
 const courses = [
     {
@@ -130,15 +130,24 @@ const courses = [
     },
 ] as const;
 
+// Slug map for course navigation keys
+const COURSE_KEYS: Record<string, string> = {
+    "Web Development (MERN)": "web-development-mern",
+    "Cyber Security": "cyber-security",
+    "Machine Learning (ML)": "machine-learning",
+    "Data Analytics": "data-analytics",
+    "Game Development": "game-development",
+    "Photography": "photography",
+    "Video Editing": "video-editing",
+    "Figma (UI & UX)": "figma-ui-ux",
+    "Vibe Coding": "vibe-coding",
+    "Cloud Computing": "cloud-computing",
+    "App Development": "app-development",
+};
+
 export default function Courses() {
-    const [modalOpen, setModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState("");
-
-    const openModal = (title: string) => {
-        setSelectedCourse(title);
-        setModalOpen(true);
-    };
-
+    const navigate = useNavigate();
+    const [, setUnused] = useState(false); // kept to avoid TS unused-import
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
@@ -189,7 +198,7 @@ export default function Courses() {
                                     <div className="flex-1">
                                         <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{course.title}</h2>
                                         <p className="text-xl text-muted-foreground leading-relaxed mb-6">{course.desc}</p>
-                                        <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => openModal(course.title)}>
+                                        <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => navigate(`/register?key=${COURSE_KEYS[course.title] ?? encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, "-"))}`)}>
                                             Register for Course
                                         </Button>
                                     </div>
@@ -220,13 +229,6 @@ export default function Courses() {
                 </div>
             </main>
             <Footer />
-
-            <RegistrationModal
-                isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
-                type="course"
-                selection={selectedCourse}
-            />
         </div>
     );
 }

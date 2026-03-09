@@ -1,145 +1,82 @@
-import { Calendar, Clock, ArrowRight, User } from "lucide-react";
-import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { motion, Variants } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Calendar, User, Tag, ArrowRight, Clock } from "lucide-react";
 
-const POSTS = [
-    {
-        title: "The Future of Web Development in 2026",
-        excerpt: "An in-depth analysis of how WebAssembly, AI-driven code generation, and Edge networking are fundamentally rewriting application architecture.",
-        date: "March 15, 2026",
-        author: "John Doe",
-        image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800",
-        category: "Technology"
-    },
-    {
-        title: "Mastering Zero-Trust Cyber Security",
-        excerpt: "Why the traditional firewall perimeter model is dead, and how enterprises are enforcing zero-trust policies inside their own internal subnets.",
-        date: "March 10, 2026",
-        author: "Jane Smith",
-        image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
-        category: "Security"
-    },
-    {
-        title: "Designing for Flow State: Vibe Coding",
-        excerpt: "How to strip away cognitive friction in your IDE and write code seamlessly by relying on intuition and beautifully structured patterns.",
-        date: "March 05, 2026",
-        author: "Alex Johnson",
-        image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=800",
-        category: "Software Engineering"
-    },
-    {
-        title: "Big Data vs. Smart Data",
-        excerpt: "Collecting massive data lakes is useless without proper schema indexing. How to transform raw logs into actionable business intelligence.",
-        date: "February 28, 2026",
-        author: "Sarah Connor",
-        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
-        category: "Data Analytics"
-    },
-    {
-        title: "Unreal Engine 6: The Leap in Rendering",
-        excerpt: "Analyzing the new global illumination algorithms that allow independent indie studios to push AAA cinematic visual fidelity.",
-        date: "February 22, 2026",
-        author: "Mark Evans",
-        image: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=800",
-        category: "Game Development"
-    },
-    {
-        title: "Demystifying GraphQL for REST Veterans",
-        excerpt: "A practical guide to transitioning your backend mindsets from strict REST endpoints to highly flexible, query-driven state architectures.",
-        date: "February 15, 2026",
-        author: "Elena Rodriguez",
-        image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800",
-        category: "Technology"
-    }
-];
+import { BLOG_POSTS as POSTS, BlogPost } from "@/data/blogData";
+
+const TAG_COLORS: Record<string, string> = {
+    engineering: "text-primary bg-primary/10 border-primary/20",
+    security: "text-red-400 bg-red-500/10 border-red-500/20",
+    ai: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    data: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    creative: "text-accent bg-accent/10 border-accent/20",
+    design: "text-pink-400 bg-pink-500/10 border-pink-500/20",
+    infra: "text-green-400 bg-green-500/10 border-green-500/20",
+};
 
 export default function Blog() {
-    const containerVariants: Variants = {
-        hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-    };
-
-    const itemVariants: Variants = {
-        hidden: { opacity: 0, y: 30 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50, damping: 15 } }
-    };
-
     return (
-        <div className="min-h-screen bg-background relative overflow-hidden flex flex-col pt-24">
-            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
-
+        <div className="min-h-screen bg-background flex flex-col pt-24 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
             <Navbar />
 
-            <main className="flex-1 container mx-auto max-w-7xl px-4 py-12 relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
-                >
-                    <h1 className="font-display text-4xl md:text-5xl font-bold mb-4 gradient-text">Fironix Insights</h1>
-                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Deep technical explorations, architecture reviews, and industry analysis from our elite engineering teams.
-                    </p>
+            <main className="flex-1 container mx-auto max-w-6xl px-4 py-12 relative z-10">
+                {/* Header */}
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-14">
+                    <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20 mb-4">Fironix Blog</span>
+                    <h1 className="font-display text-4xl md:text-5xl font-bold gradient-text mb-4">Engineering Insights</h1>
+                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Tutorials, deep dives, and career guides written by our instructors — covering every course we teach.</p>
                 </motion.div>
 
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="show"
-                    className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-                >
-                    {POSTS.map((post, idx) => (
-                        <motion.article
-                            key={idx}
-                            variants={itemVariants}
-                            whileHover={{ y: -5 }}
-                            className="interactive-card glass-panel rounded-2xl border-glow flex flex-col group overflow-hidden"
+                {/* Featured top posts */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                    {POSTS.slice(0, 2).map((post, i) => (
+                        <motion.article key={post.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                            className="glass-panel border-glow rounded-2xl p-8 flex flex-col justify-between interactive-card group hover:shadow-[0_0_40px_hsl(187_80%_50%_/_0.1)] transition-shadow"
                         >
-                            <div className="relative h-48 w-full overflow-hidden">
-                                <div className="absolute inset-0 bg-primary/10 mix-blend-overlay z-10" />
-                                <img
-                                    src={post.image}
-                                    alt={post.title}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                                <div className="absolute top-4 left-4 z-20">
-                                    <span className="bg-background/80 backdrop-blur-md border border-border/50 text-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                                        {post.category}
-                                    </span>
+                            <div>
+                                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${TAG_COLORS[post.tag]}`}>{post.category}</span>
+                                    <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock size={12} />{post.readTime} read</span>
                                 </div>
+                                <h2 className="font-display text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{post.title}</h2>
+                                <p className="text-muted-foreground leading-relaxed text-sm">{post.excerpt}</p>
                             </div>
-
-                            <div className="p-6 flex flex-col flex-1">
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                                    <div className="flex items-center gap-1.5 border-r border-border/50 pr-4">
-                                        <Calendar size={14} className="text-primary" />
-                                        {post.date}
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <User size={14} className="text-primary" />
-                                        {post.author}
-                                    </div>
+                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <User size={12} /> {post.author} · <Calendar size={12} /> {post.date}
                                 </div>
-
-                                <h3 className="font-display text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                                    {post.title}
-                                </h3>
-
-                                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1 line-clamp-3">
-                                    {post.excerpt}
-                                </p>
-
-                                <Button variant="ghost" className="w-fit p-0 h-auto text-primary text-sm font-semibold hover:text-primary hover:bg-transparent group/btn">
-                                    Read Article <ArrowRight size={16} className="ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                                </Button>
+                                <Link to={`/blog/${post.id}`} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">Read <ArrowRight size={12} /></Link>
                             </div>
                         </motion.article>
                     ))}
-                </motion.div>
+                </div>
+
+                {/* Grid of remaining posts */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {POSTS.slice(2).map((post, i) => (
+                        <motion.article key={post.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: (i % 3) * 0.06 }}
+                            className="glass-panel rounded-2xl p-6 flex flex-col justify-between interactive-card group border border-border/40 hover:border-primary/30 transition-all"
+                        >
+                            <div>
+                                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${TAG_COLORS[post.tag]}`}>{post.category}</span>
+                                    <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock size={10} />{post.readTime}</span>
+                                </div>
+                                <h3 className="font-bold text-base text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">{post.title}</h3>
+                                <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">{post.excerpt}</p>
+                            </div>
+                            <div className="flex items-center justify-between mt-5 pt-3 border-t border-border/30">
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Tag size={10} /> {post.author}
+                                </div>
+                                <Link to={`/blog/${post.id}`} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">Read <ArrowRight size={10} /></Link>
+                            </div>
+                        </motion.article>
+                    ))}
+                </div>
             </main>
 
             <Footer />

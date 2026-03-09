@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
     LayoutDashboard, BookOpen, Briefcase, FolderOpen, Settings, Users, LogOut,
-    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon
+    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon, Code2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ const API = "http://localhost:3001";
 type Collection = "courses" | "internships" | "projects" | "services" | "team";
 type Registration = { id: string; name: string; email: string; phone?: string; type: string; selection: string; timestamp: string; status: string };
 
-const TABS: { id: Collection | "registrations" | "home"; label: string; icon: LucideIcon }[] = [
+const TABS: { id: Collection | "registrations" | "home" | "import"; label: string; icon: LucideIcon }[] = [
     { id: "home", label: "Dashboard", icon: LayoutDashboard },
     { id: "courses", label: "Courses", icon: BookOpen },
     { id: "internships", label: "Internships", icon: Briefcase },
@@ -22,6 +22,7 @@ const TABS: { id: Collection | "registrations" | "home"; label: string; icon: Lu
     { id: "services", label: "Services", icon: Settings },
     { id: "team", label: "Team", icon: Users },
     { id: "registrations", label: "Registrations", icon: ClipboardList },
+    { id: "import", label: "Code Import", icon: Code2 },
 ];
 
 function useApi() {
@@ -52,16 +53,20 @@ function StatsCard({ label, count, icon: Icon, color }: { label: string; count: 
     );
 }
 
+type Tab = Collection | "registrations" | "home" | "import";
+
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const api = useApi();
-    const [tab, setTab] = useState<Collection | "registrations" | "home">("home");
+    const [tab, setTab] = useState<Tab>("home");
     const [data, setData] = useState<Record<string, object[]>>({});
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [newItem, setNewItem] = useState<Record<string, string>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Record<string, string>>({});
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [importJson, setImportJson] = useState("");
+    const [importCollection, setImportCollection] = useState<Collection>("courses");
     const adminUser = localStorage.getItem("fironix_admin_user") || "Admin";
 
     const loadData = useCallback(async () => {
@@ -70,7 +75,12 @@ export default function AdminDashboard() {
             if (db.error) { toast.error("Session expired. Please log in."); navigate("/admin/login"); return; }
             setData(db);
             setRegistrations(db.registrations || []);
-        } catch { toast.error("Cannot connect to API server."); }
+        } catch {
+            toast.error(
+                "⚠️ API server offline. Open a second terminal and run: npm run server",
+                { duration: 8000 }
+            );
+        }
     }, [api, navigate]);
 
     useEffect(() => {
@@ -86,7 +96,7 @@ export default function AdminDashboard() {
     };
 
     const handleAdd = async () => {
-        if (tab === "registrations" || tab === "home") return;
+        if (tab === "registrations" || tab === "home" || tab === "import") return;
         const filled = Object.values(newItem).filter(Boolean);
         if (filled.length === 0) { toast.error("Please fill in at least one field."); return; }
         await api.post(`/api/admin/content/${tab}`, newItem);
@@ -96,7 +106,7 @@ export default function AdminDashboard() {
     };
 
     const handleDelete = async (id: string) => {
-        if (tab === "registrations" || tab === "home") return;
+        if (tab === "registrations" || tab === "home" || tab === "import") return;
         if (!confirm("Delete this item? This cannot be undone.")) return;
         await api.del(`/api/admin/content/${tab}/${id}`);
         toast.success("Deleted.");
@@ -104,14 +114,29 @@ export default function AdminDashboard() {
     };
 
     const handleEditSave = async (id: string) => {
-        if (tab === "registrations" || tab === "home") return;
+        if (tab === "registrations" || tab === "home" || tab === "import") return;
         await api.put(`/api/admin/content/${tab}/${id}`, editValues);
         toast.success("Updated.");
         setEditingId(null);
         loadData();
     };
 
-    const currentItems = tab !== "home" && tab !== "registrations" ? (data[tab] as (Record<string, string>)[] || []) : [];
+    const handleImport = async () => {
+        let parsed: object[];
+        try { parsed = JSON.parse(importJson); }
+        catch { toast.error("Invalid JSON. Please check your input."); return; }
+        if (!Array.isArray(parsed)) { toast.error("JSON must be an array of objects [ {...}, {...} ]"); return; }
+        let count = 0;
+        for (const item of parsed) {
+            await api.post(`/api/admin/content/${importCollection}`, item);
+            count++;
+        }
+        toast.success(`Imported ${count} item${count !== 1 ? "s" : ""} into ${importCollection}.`);
+        setImportJson("");
+        loadData();
+    };
+
+    const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import") ? (data[tab] as (Record<string, string>)[] || []) : [];
     const fieldKeys = currentItems.length > 0 ? Object.keys(currentItems[0]).filter(k => k !== "id") : ["title", "description"];
 
     return (
@@ -219,8 +244,54 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
+                {/* CODE IMPORT TAB */}
+                {tab === "import" && (
+                    <div className="glass-panel border-glow rounded-2xl p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <Code2 size={20} className="text-primary" />
+                            <h2 className="font-bold text-xl text-foreground">Bulk Code Import</h2>
+                        </div>
+                        <p className="text-muted-foreground text-sm mb-6">
+                            Paste a JSON array of objects below. Each object will be added as a new entry to the selected collection.
+                            <br />Example: <code className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-mono">{`[{"title":"Web Dev","description":"..."}]`}</code>
+                        </p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-foreground mb-2">Target Collection</label>
+                                <select
+                                    value={importCollection}
+                                    onChange={e => setImportCollection(e.target.value as Collection)}
+                                    className="glass-panel border border-border/60 rounded-xl px-4 py-2.5 text-sm bg-card text-foreground w-full md:w-auto min-w-[200px]"
+                                >
+                                    {(["courses", "internships", "projects", "services", "team"] as Collection[]).map(c => (
+                                        <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-foreground mb-2">JSON Data</label>
+                                <textarea
+                                    value={importJson}
+                                    onChange={e => setImportJson(e.target.value)}
+                                    rows={12}
+                                    className="w-full glass-panel border border-border/50 rounded-xl p-4 text-sm font-mono bg-card text-foreground resize-y focus:border-primary/60 outline-none transition-colors"
+                                    placeholder={`[\n  {\n    "title": "New Course",\n    "description": "Course description here",\n    "duration": "12 weeks"\n  }\n]`}
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <Button onClick={handleImport} className="box-glow rounded-xl gap-2">
+                                    <Plus size={16} /> Import Data
+                                </Button>
+                                <Button variant="outline" onClick={() => setImportJson("")} className="rounded-xl">
+                                    Clear
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* COLLECTION TABS */}
-                {tab !== "home" && tab !== "registrations" && (
+                {tab !== "home" && tab !== "registrations" && tab !== "import" && (
                     <div className="space-y-6">
                         {/* Add New Item */}
                         <div className="glass-panel border-glow rounded-2xl p-6">
