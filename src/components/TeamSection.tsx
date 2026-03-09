@@ -2,8 +2,8 @@ import { motion, Variants } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const team = [
-  { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg", path: "#" },
-  { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg", path: "/portfolio-template" },
+  { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg", path: "/portfolio/ashwini" },
+  { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg", path: "/portfolio/nahul" },
 ] as const;
 
 export default function TeamSection() {
@@ -44,7 +44,7 @@ export default function TeamSection() {
               <Link
                 to={member.path}
                 key={member.name}
-                className={member.path === "#" ? "cursor-default" : "cursor-pointer"}
+                className="cursor-pointer"
               >
                 <motion.div
                   variants={itemVariants}
@@ -66,11 +66,9 @@ export default function TeamSection() {
                   </div>
                   <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{member.name}</h3>
                   <p className="text-sm text-primary">{member.role}</p>
-                  {member.path !== "#" && (
-                    <div className="mt-4 text-xs font-medium text-primary/50 group-hover:text-primary transition-colors">
-                      View Portfolio →
-                    </div>
-                  )}
+                  <div className="mt-4 text-xs font-medium text-primary/50 group-hover:text-primary transition-colors">
+                    View Portfolio →
+                  </div>
                 </motion.div>
               </Link>
             ))}

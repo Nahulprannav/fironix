@@ -3,61 +3,29 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { motion, Variants } from "framer-motion";
 import { Award, Briefcase, Code, Coffee, ExternalLink, Github, Linkedin, Mail, Zap } from "lucide-react";
-
-// Template Data - This can be fully customized per employee
-const EMPLOYEE_DATA = {
-    name: "NAHUL PRANNAV S",
-    role: "Full-Stack Developer & AI Enthusiast",
-    bio: "Passionate B.Tech Information Technology student at Christ the King Engineering College. Experienced in building real-time web and mobile applications, AI voice assistants, and automation tools. Dedicated to solving complex problems through efficient code and modern technology stacks.",
-    email: "nahulprannav@gmail.com",
-    socialUrls: {
-        github: "https://github.com/Nahulprannav",
-        linkedin: "https://linkedin.com/in/nahul-prannav-27372029a",
-    },
-    skills: ["Python", "JavaScript", "React.js", "Node.js", "PHP", "MySQL", "MongoDB", "FlutterFlow", "Selenium", "BeautifulSoup", "Power BI", "Tailwind CSS"],
-    experience: [
-        {
-            role: "Intern",
-            company: "Piano Tech",
-            period: "Internship",
-            description: "Contributed to web and app development projects in real-time environments. Built automation tools, game logic, and interface designs. Engaged in debugging, testing, and documenting code."
-        },
-        {
-            role: "Web Developer",
-            company: "Freelance",
-            period: "Freelance",
-            description: "Developed and deployed professional websites for small businesses. Customized layouts, features, and admin controls based on client needs. Ensured code maintainability and SEO best practices."
-        }
-    ],
-    projects: [
-        {
-            title: "FRIDAY – AI Voice Assistant",
-            description: "Developed an AI voice assistant in Python activated by 'Hey FRIDAY'. Features include user authentication via voice, custom NLP logic with spaCy, and a custom animated GUI.",
-            tags: ["Python", "NLP", "GUI"],
-            link: "#"
-        },
-        {
-            title: "Gateway Software",
-            description: "Secure access system for digital library resources with encrypted credentials, admin dashboard, and role-based permissions.",
-            tags: ["Python", "Security", "Admin Portal"],
-            link: "#"
-        },
-        {
-            title: "Mobile App Development",
-            description: "Developed multiple mobile apps using FlutterFlow focusing on usability, including a productivity tool and an educational app.",
-            tags: ["FlutterFlow", "Mobile", "UX"],
-            link: "#"
-        },
-        {
-            title: "Web Scraping & Automation",
-            description: "Created multiple automation scripts and scraping tools using Selenium and BeautifulSoup for complex data extraction tasks.",
-            tags: ["Selenium", "BeautifulSoup", "Automation"],
-            link: "#"
-        }
-    ]
-};
+import { useParams, Link } from "react-router-dom";
+import { TEAM_DATA } from "@/data/teamData";
 
 export default function PortfolioTemplate() {
+    const { id } = useParams();
+    const data = id ? TEAM_DATA[id] : null;
+
+    if (!data) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+                <Navbar />
+                <div className="text-center space-y-6">
+                    <h1 className="font-display text-4xl font-bold gradient-text">Portfolio Not Found</h1>
+                    <p className="text-muted-foreground">The portfolio you are looking for doesn't exist or has been moved.</p>
+                    <Button asChild className="box-glow rounded-full">
+                        <Link to="/">Return Home</Link>
+                    </Button>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
     const fadeUp: Variants = {
         hidden: { opacity: 0, y: 30 },
         show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50, damping: 15 } }
@@ -88,9 +56,8 @@ export default function PortfolioTemplate() {
                     <div className="flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
                         <motion.div variants={fadeUp} className="relative">
                             <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-4 border-background/50 shadow-[0_0_30px_hsl(187_80%_50%_/_0.3)] overflow-hidden bg-muted">
-                                {/* Employee Profile Placeholder */}
                                 <div className="w-full h-full flex items-center justify-center bg-card text-muted-foreground text-4xl font-display">
-                                    {EMPLOYEE_DATA.name.charAt(0)}
+                                    {data.name.charAt(0)}
                                 </div>
                             </div>
                             <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-3 rounded-full shadow-lg">
@@ -100,26 +67,32 @@ export default function PortfolioTemplate() {
 
                         <div className="flex-1 text-center md:text-left">
                             <motion.h1 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-glow mb-2">
-                                {EMPLOYEE_DATA.name}
+                                {data.name}
                             </motion.h1>
                             <motion.h2 variants={fadeUp} className="text-xl md:text-2xl text-primary font-medium mb-6">
-                                {EMPLOYEE_DATA.role}
+                                {data.role}
                             </motion.h2>
                             <motion.p variants={fadeUp} className="text-muted-foreground leading-relaxed mb-8 max-w-2xl">
-                                {EMPLOYEE_DATA.bio}
+                                {data.bio}
                             </motion.p>
 
                             <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center md:justify-start">
-                                <Button className="box-glow rounded-full px-6 gap-2">
-                                    <Mail size={16} /> Contact Me
+                                <Button className="box-glow rounded-full px-6 gap-2" asChild>
+                                    <a href={`mailto:${data.email}`}>
+                                        <Mail size={16} /> Contact Me
+                                    </a>
                                 </Button>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="icon" className="rounded-full glass-panel border-glow hover:text-primary" asChild>
-                                        <a href={EMPLOYEE_DATA.socialUrls.github} target="_blank" rel="noreferrer"><Github size={18} /></a>
-                                    </Button>
-                                    <Button variant="outline" size="icon" className="rounded-full glass-panel border-glow hover:text-primary" asChild>
-                                        <a href={EMPLOYEE_DATA.socialUrls.linkedin} target="_blank" rel="noreferrer"><Linkedin size={18} /></a>
-                                    </Button>
+                                    {data.socialUrls.github && (
+                                        <Button variant="outline" size="icon" className="rounded-full glass-panel border-glow hover:text-primary" asChild>
+                                            <a href={data.socialUrls.github} target="_blank" rel="noreferrer"><Github size={18} /></a>
+                                        </Button>
+                                    )}
+                                    {data.socialUrls.linkedin && (
+                                        <Button variant="outline" size="icon" className="rounded-full glass-panel border-glow hover:text-primary" asChild>
+                                            <a href={data.socialUrls.linkedin} target="_blank" rel="noreferrer"><Linkedin size={18} /></a>
+                                        </Button>
+                                    )}
                                 </div>
                             </motion.div>
                         </div>
@@ -140,7 +113,7 @@ export default function PortfolioTemplate() {
                                 <Zap className="text-accent" size={24} /> Technical Skills
                             </h3>
                             <div className="flex flex-wrap gap-2">
-                                {EMPLOYEE_DATA.skills.map((skill) => (
+                                {data.skills.map((skill) => (
                                     <span key={skill} className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-sm border border-border/50 shadow-sm">
                                         {skill}
                                     </span>
@@ -166,7 +139,7 @@ export default function PortfolioTemplate() {
                         </h3>
 
                         <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-border before:to-transparent">
-                            {EMPLOYEE_DATA.experience.map((exp, idx) => (
+                            {data.experience.map((exp, idx) => (
                                 <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                                     <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-card text-primary shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[0_0_10px_hsl(187_80%_50%_/_0.3)] z-10">
                                         <Award size={16} />
@@ -196,11 +169,11 @@ export default function PortfolioTemplate() {
                         className="text-center mb-10"
                     >
                         <h2 className="font-display text-3xl font-bold mb-4">Featured Contributions</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">Key projects and architectural implementations I've led or significantly contributed to during my tenure.</p>
+                        <p className="text-muted-foreground max-w-2xl mx-auto">Key projects and architectural implementations I've lead or significantly contributed to during my tenure.</p>
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        {EMPLOYEE_DATA.projects.map((project, idx) => (
+                        {data.projects.map((project, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, y: 20 }}
