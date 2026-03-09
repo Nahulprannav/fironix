@@ -6,40 +6,52 @@ import { Award, Briefcase, Code, Coffee, ExternalLink, Github, Linkedin, Mail, Z
 
 // Template Data - This can be fully customized per employee
 const EMPLOYEE_DATA = {
-    name: "John Doe",
-    role: "Senior Full-Stack Developer",
-    bio: "Passionate software engineer with over 5 years of experience building scalable web applications. Specialized in React, Node.js, and cloud architecture. Dedicated to writing clean, maintainable code and solving complex technical challenges.",
-    email: "john.doe@fironix.com",
+    name: "NAHUL PRANNAV S",
+    role: "Full-Stack Developer & AI Enthusiast",
+    bio: "Passionate B.Tech Information Technology student at Christ the King Engineering College. Experienced in building real-time web and mobile applications, AI voice assistants, and automation tools. Dedicated to solving complex problems through efficient code and modern technology stacks.",
+    email: "nahulprannav@gmail.com",
     socialUrls: {
-        github: "#",
-        linkedin: "#",
+        github: "https://github.com/Nahulprannav",
+        linkedin: "https://linkedin.com/in/nahul-prannav-27372029a",
     },
-    skills: ["React", "TypeScript", "Node.js", "AWS", "PostgreSQL", "Next.js", "Docker", "GraphQL"],
+    skills: ["Python", "JavaScript", "React.js", "Node.js", "PHP", "MySQL", "MongoDB", "FlutterFlow", "Selenium", "BeautifulSoup", "Power BI", "Tailwind CSS"],
     experience: [
         {
-            role: "Senior Developer",
-            company: "Fironix",
-            period: "2022 - Present",
-            description: "Leading the frontend team in developing high-performance enterprise applications. Mentoring junior developers and establishing code quality standards."
+            role: "Intern",
+            company: "Piano Tech",
+            period: "Internship",
+            description: "Contributed to web and app development projects in real-time environments. Built automation tools, game logic, and interface designs. Engaged in debugging, testing, and documenting code."
         },
         {
-            role: "Full-Stack Developer",
-            company: "TechSolutions Inc.",
-            period: "2019 - 2022",
-            description: "Developed and maintained multiple client-facing applications. Spearheaded the migration from legacy infrastructure to modern cloud-native architectures."
+            role: "Web Developer",
+            company: "Freelance",
+            period: "Freelance",
+            description: "Developed and deployed professional websites for small businesses. Customized layouts, features, and admin controls based on client needs. Ensured code maintainability and SEO best practices."
         }
     ],
     projects: [
         {
-            title: "Enterprise Dashboard",
-            description: "A real-time analytics dashboard processing millions of data points daily.",
-            tags: ["React", "WebSockets", "D3.js"],
+            title: "FRIDAY – AI Voice Assistant",
+            description: "Developed an AI voice assistant in Python activated by 'Hey FRIDAY'. Features include user authentication via voice, custom NLP logic with spaCy, and a custom animated GUI.",
+            tags: ["Python", "NLP", "GUI"],
             link: "#"
         },
         {
-            title: "Authentication Microservice",
-            description: "Secure, scalable OAuth2.0 authentication service used across multiple company applications.",
-            tags: ["Node.js", "Redis", "JWT"],
+            title: "Gateway Software",
+            description: "Secure access system for digital library resources with encrypted credentials, admin dashboard, and role-based permissions.",
+            tags: ["Python", "Security", "Admin Portal"],
+            link: "#"
+        },
+        {
+            title: "Mobile App Development",
+            description: "Developed multiple mobile apps using FlutterFlow focusing on usability, including a productivity tool and an educational app.",
+            tags: ["FlutterFlow", "Mobile", "UX"],
+            link: "#"
+        },
+        {
+            title: "Web Scraping & Automation",
+            description: "Created multiple automation scripts and scraping tools using Selenium and BeautifulSoup for complex data extraction tasks.",
+            tags: ["Selenium", "BeautifulSoup", "Automation"],
             link: "#"
         }
     ]
