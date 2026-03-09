@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-
-const API = "http://localhost:3001";
+import { api } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
 // Data: every registrable item keyed by a URL slug / param
@@ -87,13 +86,7 @@ export default function Register() {
         if (!name || !email) { toast.error("Please fill in your name and email."); return; }
         setLoading(true);
         try {
-            const res = await fetch(`${API}/api/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, phone, type: selectedType, selection: selectedDomain }),
-            });
-            const data = await res.json();
-            if (!res.ok) { toast.error(data.error || "Registration failed."); return; }
+            await api.post("/register", { name, email, phone, type: selectedType, selection: selectedDomain });
             setStep("success");
         } catch {
             // Fallback: if server is down, still show success (will be handled via email)

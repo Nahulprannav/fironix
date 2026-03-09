@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
-const API = "http://127.0.0.1:3001";
+import { api } from "@/lib/api";
 
 interface Props {
     isOpen: boolean;
@@ -33,13 +32,7 @@ export default function RegistrationModal({ isOpen, onClose, type, selection }: 
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`${API}/api/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, phone, type, selection }),
-            });
-            const data = await res.json();
-            if (!res.ok) { toast.error(data.error || "Registration failed."); return; }
+            await api.post("/register", { name, email, phone, type, selection });
             setDone(true);
         } catch {
             toast.error("Cannot reach server. Is 'npm run server' running?");
