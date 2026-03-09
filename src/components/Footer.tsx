@@ -105,7 +105,7 @@ export default function Footer() {
               <div>
                 <h4 className="font-bold text-sm text-foreground uppercase tracking-widest mb-4">Contact</h4>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p><span className="text-foreground font-medium">Email:</span> ashiwini@fironix.in</p>
+                  <p><span className="text-foreground font-medium">Email:</span> ashwini@fironix.in</p>
                   <p><span className="text-foreground font-medium">Admin:</span> <Link to="/admin/login" className="text-primary hover:underline">Login →</Link></p>
                 </div>
               </div>

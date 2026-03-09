@@ -1,8 +1,9 @@
 import { motion, Variants } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const team = [
-  { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg" },
-  { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg" },
+  { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg", path: "#" },
+  { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg", path: "/portfolio-template" },
 ] as const;
 
 export default function TeamSection() {
@@ -40,28 +41,38 @@ export default function TeamSection() {
             className="flex flex-wrap justify-center gap-8 relative z-10"
           >
             {team.map((member) => (
-              <motion.div
-                variants={itemVariants}
+              <Link
+                to={member.path}
                 key={member.name}
-                className="interactive-card glass-panel group w-64 text-center p-6 rounded-2xl border-glow"
+                className={member.path === "#" ? "cursor-default" : "cursor-pointer"}
               >
-                <div className="relative w-40 h-40 mx-auto mb-5 rounded-full overflow-hidden border-2 border-primary/30 group-hover:border-primary/60 transition-all duration-500 box-glow">
-                  {member.image ? (
-                    <img src={member.image} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  ) : (
-                    <div className="w-full h-full bg-secondary flex items-center justify-center">
-                      <span className="font-display text-3xl text-primary font-bold">
-                        {member.name
-                          .split(" ")
-                          .map((namePart) => namePart[0])
-                          .join("")}
-                      </span>
+                <motion.div
+                  variants={itemVariants}
+                  className="interactive-card glass-panel group w-64 text-center p-6 rounded-2xl border-glow"
+                >
+                  <div className="relative w-40 h-40 mx-auto mb-5 rounded-full overflow-hidden border-2 border-primary/30 group-hover:border-primary/60 transition-all duration-500 box-glow">
+                    {member.image ? (
+                      <img src={member.image} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <div className="w-full h-full bg-secondary flex items-center justify-center">
+                        <span className="font-display text-3xl text-primary font-bold">
+                          {member.name
+                            .split(" ")
+                            .map((namePart) => namePart[0])
+                            .join("")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{member.name}</h3>
+                  <p className="text-sm text-primary">{member.role}</p>
+                  {member.path !== "#" && (
+                    <div className="mt-4 text-xs font-medium text-primary/50 group-hover:text-primary transition-colors">
+                      View Portfolio →
                     </div>
                   )}
-                </div>
-                <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{member.name}</h3>
-                <p className="text-sm text-primary">{member.role}</p>
-              </motion.div>
+                </motion.div>
+              </Link>
             ))}
           </motion.div>
         </motion.div>
