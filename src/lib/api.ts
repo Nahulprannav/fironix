@@ -7,7 +7,8 @@ export const API_BASE = ENV_API_BASE
     ? ENV_API_BASE.replace(/\/+$/, "")
     : "/api";
 
-const LOCAL_FALLBACK_ENABLED = !ENV_API_BASE;
+const IS_LOCAL_DEV_HOST = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const LOCAL_FALLBACK_ENABLED = !ENV_API_BASE && !IS_LOCAL_DEV_HOST;
 const LOCAL_DB_KEY = "fironix_local_db_v1";
 const LOCAL_TOKEN = "fironix-local-admin-token";
 const LOCAL_ADMIN_USERNAME = "admin";

@@ -1,12 +1,84 @@
+import { useEffect, useMemo, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
 
-const team = [
+type TeamMember = {
+  name: string;
+  role: string;
+  image?: string;
+  path: string;
+};
+
+type DynamicTeamMember = {
+  name?: string;
+  title?: string;
+  role?: string;
+  designation?: string;
+  description?: string;
+  image?: string;
+  path?: string;
+};
+
+const STATIC_TEAM: TeamMember[] = [
   { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg", path: "/portfolio/ashwini" },
   { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg", path: "/portfolio/nahul" },
-] as const;
+];
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
 
 export default function TeamSection() {
+  const [dynamicTeam, setDynamicTeam] = useState<DynamicTeamMember[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    api
+      .get<{ team?: unknown }>("/data")
+      .then((data) => {
+        if (!active) return;
+        if (Array.isArray(data.team)) {
+          setDynamicTeam(data.team as DynamicTeamMember[]);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch team:", err));
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const allTeam = useMemo<TeamMember[]>(() => {
+    const normalizedDynamic = dynamicTeam
+      .map((member) => {
+        const name = String(member.name || member.title || "").trim();
+        if (!name) return null;
+
+        const role = String(member.role || member.designation || member.description || "Team Member").trim();
+        const image = typeof member.image === "string" ? member.image : undefined;
+        const path = typeof member.path === "string" && member.path.trim().length > 0
+          ? member.path
+          : `/portfolio/${slugify(name)}`;
+
+        return { name, role, image, path };
+      })
+      .filter((member) => member !== null) as TeamMember[];
+
+    const seen = new Set<string>();
+    return [...STATIC_TEAM, ...normalizedDynamic].filter((member) => {
+      const key = `${member.name}|${member.role}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [dynamicTeam]);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.2 } }
@@ -40,10 +112,10 @@ export default function TeamSection() {
             viewport={{ once: true, margin: "-50px" }}
             className="flex flex-wrap justify-center gap-8 relative z-10"
           >
-            {team.map((member) => (
+            {allTeam.map((member) => (
               <Link
                 to={member.path}
-                key={member.name}
+                key={`${member.name}-${member.role}`}
                 className="cursor-pointer"
               >
                 <motion.div
@@ -67,7 +139,7 @@ export default function TeamSection() {
                   <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{member.name}</h3>
                   <p className="text-sm text-primary">{member.role}</p>
                   <div className="mt-4 text-xs font-medium text-primary/50 group-hover:text-primary transition-colors">
-                    View Portfolio →
+                    View Portfolio {"->"}
                   </div>
                 </motion.div>
               </Link>

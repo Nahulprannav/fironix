@@ -65,11 +65,9 @@ export default function AdminDashboard() {
             if (db.error) { toast.error("Session expired. Please log in."); navigate("/admin/login"); return; }
             setData(db);
             setRegistrations(db.registrations || []);
-        } catch {
-            toast.error(
-                "⚠️ API server offline. Open a second terminal and run: npm run server",
-                { duration: 8000 }
-            );
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "API server offline. Open a second terminal and run: npm run server";
+            toast.error(message, { duration: 8000 });
         }
     }, [navigate]);
 
@@ -89,29 +87,44 @@ export default function AdminDashboard() {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         const filled = Object.values(newItem).filter(Boolean);
         if (filled.length === 0) { toast.error("Please fill in at least one field."); return; }
-        const token = localStorage.getItem("fironix_admin_token") || "";
-        await api.post(`/admin/content/${tab}`, newItem, token);
-        toast.success("Item added!");
-        setNewItem({});
-        loadData();
+
+        try {
+            const token = localStorage.getItem("fironix_admin_token") || "";
+            await api.post(`/admin/content/${tab}`, newItem, token);
+            toast.success("Item added!");
+            setNewItem({});
+            await loadData();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to add item.");
+        }
     };
 
     const handleDelete = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         if (!confirm("Delete this item? This cannot be undone.")) return;
-        const token = localStorage.getItem("fironix_admin_token") || "";
-        await api.del(`/admin/content/${tab}/${id}`, token);
-        toast.success("Deleted.");
-        loadData();
+
+        try {
+            const token = localStorage.getItem("fironix_admin_token") || "";
+            await api.del(`/admin/content/${tab}/${id}`, token);
+            toast.success("Deleted.");
+            await loadData();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to delete item.");
+        }
     };
 
     const handleEditSave = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
-        const token = localStorage.getItem("fironix_admin_token") || "";
-        await api.put(`/admin/content/${tab}/${id}`, editValues, token);
-        toast.success("Updated.");
-        setEditingId(null);
-        loadData();
+
+        try {
+            const token = localStorage.getItem("fironix_admin_token") || "";
+            await api.put(`/admin/content/${tab}/${id}`, editValues, token);
+            toast.success("Updated.");
+            setEditingId(null);
+            await loadData();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to update item.");
+        }
     };
 
     const handleImport = async () => {
@@ -119,15 +132,20 @@ export default function AdminDashboard() {
         try { parsed = JSON.parse(importJson); }
         catch { toast.error("Invalid JSON. Please check your input."); return; }
         if (!Array.isArray(parsed)) { toast.error("JSON must be an array of objects [ {...}, {...} ]"); return; }
-        let count = 0;
-        const token = localStorage.getItem("fironix_admin_token") || "";
-        for (const item of parsed) {
-            await api.post(`/admin/content/${importCollection}`, item, token);
-            count++;
+
+        try {
+            let count = 0;
+            const token = localStorage.getItem("fironix_admin_token") || "";
+            for (const item of parsed) {
+                await api.post(`/admin/content/${importCollection}`, item, token);
+                count++;
+            }
+            toast.success(`Imported ${count} item${count !== 1 ? "s" : ""} into ${importCollection}.`);
+            setImportJson("");
+            await loadData();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Import failed.");
         }
-        toast.success(`Imported ${count} item${count !== 1 ? "s" : ""} into ${importCollection}.`);
-        setImportJson("");
-        loadData();
     };
 
     const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import") ? (data[tab] as (Record<string, string>)[] || []) : [];
@@ -187,7 +205,7 @@ export default function AdminDashboard() {
                         <h1 className="font-display text-3xl font-bold text-foreground">
                             {tab === "home" ? `Welcome, ${adminUser}` : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Fironix Admin · Content Management System</p>
+                        <p className="text-muted-foreground text-sm mt-1">Fironix Admin - Content Management System</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={loadData} className="gap-2 rounded-xl">
                         <RefreshCw size={14} /> Refresh
@@ -225,7 +243,7 @@ export default function AdminDashboard() {
                                         <tr key={reg.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                                             <td className="px-5 py-3 font-medium text-foreground">{reg.name}</td>
                                             <td className="px-5 py-3 text-primary">{reg.email}</td>
-                                            <td className="px-5 py-3 text-muted-foreground">{reg.phone || "—"}</td>
+                                            <td className="px-5 py-3 text-muted-foreground">{reg.phone || "-"}</td>
                                             <td className="px-5 py-3"><span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs border border-primary/20">{reg.type}</span></td>
                                             <td className="px-5 py-3">{reg.selection}</td>
                                             <td className="px-5 py-3 text-muted-foreground">{new Date(reg.timestamp).toLocaleDateString()}</td>
