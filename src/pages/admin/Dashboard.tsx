@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-const API = "http://localhost:3001";
+import { api } from "@/lib/api";
 
 type Collection = "courses" | "internships" | "projects" | "services" | "team";
 type Registration = { id: string; name: string; email: string; phone?: string; type: string; selection: string; timestamp: string; status: string };
@@ -24,16 +24,6 @@ const TABS: { id: Collection | "registrations" | "home" | "import"; label: strin
     { id: "registrations", label: "Registrations", icon: ClipboardList },
     { id: "import", label: "Code Import", icon: Code2 },
 ];
-
-function useApi() {
-    const token = localStorage.getItem("fironix_admin_token");
-    return {
-        get: (path: string) => fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-        post: (path: string, body: object) => fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }).then(r => r.json()),
-        put: (path: string, body: object) => fetch(`${API}${path}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }).then(r => r.json()),
-        del: (path: string) => fetch(`${API}${path}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-    };
-}
 
 function StatsCard({ label, count, icon: Icon, color }: { label: string; count: number; icon: LucideIcon; color: string }) {
     return (
@@ -57,7 +47,6 @@ type Tab = Collection | "registrations" | "home" | "import";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const api = useApi();
     const [tab, setTab] = useState<Tab>("home");
     const [data, setData] = useState<Record<string, object[]>>({});
     const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -70,8 +59,9 @@ export default function AdminDashboard() {
     const adminUser = localStorage.getItem("fironix_admin_user") || "Admin";
 
     const loadData = useCallback(async () => {
+        const token = localStorage.getItem("fironix_admin_token") || "";
         try {
-            const db = await api.get("/api/admin/db");
+            const db: any = await api.get("/admin/db", token);
             if (db.error) { toast.error("Session expired. Please log in."); navigate("/admin/login"); return; }
             setData(db);
             setRegistrations(db.registrations || []);
@@ -81,7 +71,7 @@ export default function AdminDashboard() {
                 { duration: 8000 }
             );
         }
-    }, [api, navigate]);
+    }, [navigate]);
 
     useEffect(() => {
         const token = localStorage.getItem("fironix_admin_token");
@@ -99,7 +89,8 @@ export default function AdminDashboard() {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         const filled = Object.values(newItem).filter(Boolean);
         if (filled.length === 0) { toast.error("Please fill in at least one field."); return; }
-        await api.post(`/api/admin/content/${tab}`, newItem);
+        const token = localStorage.getItem("fironix_admin_token") || "";
+        await api.post(`/admin/content/${tab}`, newItem, token);
         toast.success("Item added!");
         setNewItem({});
         loadData();
@@ -108,14 +99,16 @@ export default function AdminDashboard() {
     const handleDelete = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         if (!confirm("Delete this item? This cannot be undone.")) return;
-        await api.del(`/api/admin/content/${tab}/${id}`);
+        const token = localStorage.getItem("fironix_admin_token") || "";
+        await api.del(`/admin/content/${tab}/${id}`, token);
         toast.success("Deleted.");
         loadData();
     };
 
     const handleEditSave = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
-        await api.put(`/api/admin/content/${tab}/${id}`, editValues);
+        const token = localStorage.getItem("fironix_admin_token") || "";
+        await api.put(`/admin/content/${tab}/${id}`, editValues, token);
         toast.success("Updated.");
         setEditingId(null);
         loadData();
@@ -127,8 +120,9 @@ export default function AdminDashboard() {
         catch { toast.error("Invalid JSON. Please check your input."); return; }
         if (!Array.isArray(parsed)) { toast.error("JSON must be an array of objects [ {...}, {...} ]"); return; }
         let count = 0;
+        const token = localStorage.getItem("fironix_admin_token") || "";
         for (const item of parsed) {
-            await api.post(`/api/admin/content/${importCollection}`, item);
+            await api.post(`/admin/content/${importCollection}`, item, token);
             count++;
         }
         toast.success(`Imported ${count} item${count !== 1 ? "s" : ""} into ${importCollection}.`);

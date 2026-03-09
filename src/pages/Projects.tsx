@@ -3,8 +3,10 @@ import Footer from "@/components/Footer";
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
-const projects: Array<{
+const STATIC_PROJECTS: Array<{
     title: string;
     description: string;
     image: string;
@@ -14,6 +16,15 @@ const projects: Array<{
 }> = [];
 
 export default function Projects() {
+    const [dynamicProjects, setDynamicProjects] = useState<any[]>([]);
+
+    useEffect(() => {
+        api.get<any>("/data").then(data => {
+            if (data.projects) setDynamicProjects(data.projects);
+        }).catch(err => console.error("Failed to fetch projects:", err));
+    }, []);
+
+    const allProjects = [...STATIC_PROJECTS, ...dynamicProjects];
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: {
@@ -52,14 +63,14 @@ export default function Projects() {
                     </p>
                 </motion.div>
 
-                {projects.length > 0 ? (
+                {allProjects.length > 0 ? (
                     <motion.div
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                         variants={containerVariants}
                         initial="hidden"
                         animate="show"
                     >
-                        {projects.map((project, idx) => (
+                        {allProjects.map((project, idx) => (
                             <motion.div
                                 key={idx}
                                 variants={itemVariants}
@@ -70,7 +81,7 @@ export default function Projects() {
                                     <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors duration-300 z-10" />
                                     <img
                                         loading="lazy"
-                                        src={project.image}
+                                        src={project.image || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800"}
                                         alt={project.title}
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
                                     />

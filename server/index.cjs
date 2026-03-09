@@ -32,13 +32,19 @@ const JWT_SECRET = process.env.JWT_SECRET || "fironix-jwt-super-secret-2026";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 // bcrypt hash of "fironix@admin2026"
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH ||
-    "$2a$12$F7CQvNzh9QKzFvl5.K4rquWJTIFNr14lqEPQxBsFqLb0BRl34L5c6";
+    "$2b$10$jxR9eqwisQkd12W3QlUKOeDYJKhdv0B41UZvQzJBmN8zllj18pKLu";
 
 // ------------------------------------
 // Middleware
 // ------------------------------------
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`);
+    next();
+});
 
 // ------------------------------------
 // Auth Middleware
@@ -68,12 +74,20 @@ app.get("/api/health", (req, res) => {
 
 /** Admin Login */
 app.post("/api/login", async (req, res) => {
-    const { username, password } = req.body;
+    let { username, password } = req.body;
     if (!username || !password)
         return res.status(400).json({ error: "Username and password are required." });
 
-    if (username !== ADMIN_USERNAME)
+    // Trim whitespace to prevent accidental login failures
+    username = username.trim();
+    password = password.trim();
+
+    console.log(`[AUTH] Attempt: user='${username}', pass_len=${password.length}`);
+
+    if (username !== ADMIN_USERNAME) {
+        console.log(`[AUTH] User mismatch: expected '${ADMIN_USERNAME}', got '${username}'`);
         return res.status(401).json({ error: "Invalid credentials." });
+    }
 
     const match = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
     if (!match) return res.status(401).json({ error: "Invalid credentials." });
@@ -148,7 +162,7 @@ app.put("/api/admin/content/:collection/:id", authenticate, (req, res) => {
     if (!Array.isArray(db[collection]))
         return res.status(400).json({ error: `Collection '${collection}' does not exist.` });
 
-    const index = db[collection].findIndex((item) => item.id === id);
+    const index = db[collection].findIndex((item) => String(item.id) === String(id));
     if (index === -1)
         return res.status(404).json({ error: "Item not found." });
 
@@ -165,7 +179,8 @@ app.delete("/api/admin/content/:collection/:id", authenticate, (req, res) => {
         return res.status(400).json({ error: `Collection '${collection}' does not exist.` });
 
     const before = db[collection].length;
-    db[collection] = db[collection].filter((item) => item.id !== id);
+    db[collection] = db[collection].filter((item) => String(item.id) !== String(id));
+
     if (db[collection].length === before)
         return res.status(404).json({ error: "Item not found." });
 
@@ -176,9 +191,19 @@ app.delete("/api/admin/content/:collection/:id", authenticate, (req, res) => {
 // ------------------------------------
 // Start Server
 // ------------------------------------
-app.listen(PORT, () => {
-    console.log(`\n🔥 Fironix API Server running at http://localhost:${PORT}`);
+const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`\n🔥 Fironix API Server running at http://127.0.0.1:${PORT}`);
     console.log(`📦 Database: server/database.enc (AES-256-CBC encrypted)`);
     console.log(`🔐 Admin login: POST /api/login`);
     console.log(`   Default credentials: admin / fironix@admin2026\n`);
+});
+
+server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+        console.error(`❌ Error: Port ${PORT} is already in use.`);
+        console.error(`   Please stop any other running server processes.`);
+    } else {
+        console.error(`❌ Server Error: ${err.message}`);
+    }
+    process.exit(1);
 });

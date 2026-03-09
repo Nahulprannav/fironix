@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const API = "http://localhost:3001";
+import { api } from "@/lib/api";
 
 export default function AdminLogin() {
     const [username, setUsername] = useState("");
@@ -21,28 +21,14 @@ export default function AdminLogin() {
         setLoading(true);
 
         try {
-            const res = await fetch(`${API}/api/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                toast.error(data.error || "Login failed. Please check your credentials.");
-                return;
-            }
+            const data: any = await api.post("/login", { username, password });
 
             localStorage.setItem("fironix_admin_token", data.token);
             localStorage.setItem("fironix_admin_user", data.username);
             toast.success("Welcome back, Admin!");
             navigate("/admin/dashboard");
-        } catch {
-            toast.error(
-                "⚠️ API server offline. Open a second terminal and run: npm run server",
-                { duration: 8000 }
-            );
+        } catch (err: any) {
+            toast.error(err.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }

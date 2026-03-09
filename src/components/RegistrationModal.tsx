@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const API = "http://localhost:3001";
+const API = "http://127.0.0.1:3001";
 
 interface Props {
     isOpen: boolean;

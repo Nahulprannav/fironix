@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
-const services = [
+const STATIC_SERVICES = [
   {
     icon: Code,
     title: "IT & Software Services",
@@ -50,6 +52,18 @@ const services = [
 ] as const;
 
 export default function Services() {
+  const [dynamicServices, setDynamicServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.get<any>("/data").then(data => {
+      if (data.services) setDynamicServices(data.services);
+    }).catch(err => console.error("Failed to fetch services:", err));
+  }, []);
+
+  const allServices = [
+    ...STATIC_SERVICES,
+    ...dynamicServices.map(s => ({ ...s, icon: STATIC_SERVICES[0].icon })) // Fallback icon
+  ];
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } }
@@ -89,7 +103,7 @@ export default function Services() {
               animate="show"
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10"
             >
-              {services.map((service, idx) => (
+              {allServices.map((service, idx) => (
                 <motion.div
                   key={idx}
                   variants={itemVariants}

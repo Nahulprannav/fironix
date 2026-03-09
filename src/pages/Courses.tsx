@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { Code, Shield, Brain, BarChart, Gamepad, Camera, Video, PenTool, Sparkles, Cloud, Smartphone, Zap } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -6,7 +7,7 @@ import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-const courses = [
+const STATIC_COURSES = [
     {
         icon: Code,
         title: "Web Development (MERN)",
@@ -128,26 +129,19 @@ const courses = [
             { title: "App Store Deployment", period: "Weeks 11-12", description: "Navigating the labyrinth of Apple App Store and Google Play Store policies to successfully publish to millions." }
         ]
     },
-] as const;
-
-// Slug map for course navigation keys
-const COURSE_KEYS: Record<string, string> = {
-    "Web Development (MERN)": "web-development-mern",
-    "Cyber Security": "cyber-security",
-    "Machine Learning (ML)": "machine-learning",
-    "Data Analytics": "data-analytics",
-    "Game Development": "game-development",
-    "Photography": "photography",
-    "Video Editing": "video-editing",
-    "Figma (UI & UX)": "figma-ui-ux",
-    "Vibe Coding": "vibe-coding",
-    "Cloud Computing": "cloud-computing",
-    "App Development": "app-development",
-};
+];
 
 export default function Courses() {
     const navigate = useNavigate();
-    const [, setUnused] = useState(false); // kept to avoid TS unused-import
+    const [dynamicCourses, setDynamicCourses] = useState<any[]>([]);
+
+    useEffect(() => {
+        api.get<any>("/data").then(data => {
+            if (data.courses) setDynamicCourses(data.courses);
+        }).catch(err => console.error("Failed to fetch courses:", err));
+    }, []);
+
+    const allCourses = [...STATIC_COURSES, ...dynamicCourses];
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
@@ -183,48 +177,57 @@ export default function Courses() {
                     </div>
 
                     <div className="space-y-24">
-                        {courses.map((course, courseIdx) => (
-                            <motion.div
-                                key={courseIdx}
-                                initial={{ opacity: 0, y: 40 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-100px" }}
-                                className="glass-panel p-8 md:p-12 rounded-3xl border-glow relative overflow-hidden"
-                            >
-                                <div className="flex flex-col md:flex-row gap-8 items-start mb-12 relative z-10">
-                                    <div className="p-5 rounded-2xl bg-accent/10 text-accent shadow-[0_0_20px_hsl(40_90%_55%_/_0.15)] shrink-0">
-                                        <course.icon size={48} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{course.title}</h2>
-                                        <p className="text-xl text-muted-foreground leading-relaxed mb-6">{course.desc}</p>
-                                        <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => navigate(`/register?key=${COURSE_KEYS[course.title] ?? encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, "-"))}`)}>
-                                            Register for Course
-                                        </Button>
-                                    </div>
-                                </div>
+                        {allCourses.map((course, courseIdx) => {
+                            const Icon = course.icon || Zap; // Fallback to Zap icon
+                            const description = course.desc || course.description || "";
+                            const modules = course.modules || [];
 
-                                <h3 className="font-display text-2xl font-bold mb-8 text-center bg-background/50 py-3 rounded-lg border border-border/50">Curriculum Roadmap</h3>
-
-                                <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-accent/50 before:via-border before:to-transparent">
-                                    {course.modules.map((module, idx) => (
-                                        <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                            <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-card text-accent shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[0_0_10px_hsl(40_90%_55%_/_0.2)] z-10">
-                                                <Zap size={16} />
-                                            </div>
-
-                                            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-panel p-6 rounded-xl border border-border/50 hover:border-accent/40 transition-colors">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h4 className="font-bold text-xl text-foreground">{module.title}</h4>
-                                                    <span className="text-xs font-semibold text-accent px-3 py-1 rounded-full bg-accent/10 border border-accent/20">{module.period}</span>
-                                                </div>
-                                                <p className="text-muted-foreground leading-relaxed">{module.description}</p>
-                                            </div>
+                            return (
+                                <motion.div
+                                    key={courseIdx}
+                                    initial={{ opacity: 0, y: 40 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-100px" }}
+                                    className="glass-panel p-8 md:p-12 rounded-3xl border-glow relative overflow-hidden"
+                                >
+                                    <div className="flex flex-col md:flex-row gap-8 items-start mb-12 relative z-10">
+                                        <div className="p-5 rounded-2xl bg-accent/10 text-accent shadow-[0_0_20px_hsl(40_90%_55%_/_0.15)] shrink-0">
+                                            <Icon size={48} />
                                         </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        ))}
+                                        <div className="flex-1">
+                                            <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{course.title}</h2>
+                                            <p className="text-xl text-muted-foreground leading-relaxed mb-6">{description}</p>
+                                            <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => navigate(`/register?key=${encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, "-"))}`)}>
+                                                Register for Course
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {modules.length > 0 && (
+                                        <>
+                                            <h3 className="font-display text-2xl font-bold mb-8 text-center bg-background/50 py-3 rounded-lg border border-border/50">Curriculum Roadmap</h3>
+                                            <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-accent/50 before:via-border before:to-transparent">
+                                                {modules.map((module: any, idx: number) => (
+                                                    <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-card text-accent shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[0_0_10px_hsl(40_90%_55%_/_0.2)] z-10">
+                                                            <Zap size={16} />
+                                                        </div>
+
+                                                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-panel p-6 rounded-xl border border-border/50 hover:border-accent/40 transition-colors">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h4 className="font-bold text-xl text-foreground">{module.title}</h4>
+                                                                <span className="text-xs font-semibold text-accent px-3 py-1 rounded-full bg-accent/10 border border-accent/20">{module.period}</span>
+                                                            </div>
+                                                            <p className="text-muted-foreground leading-relaxed">{module.description}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             </main>
