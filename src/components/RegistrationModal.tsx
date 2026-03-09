@@ -42,7 +42,7 @@ export default function RegistrationModal({ isOpen, onClose, type, selection }: 
             if (!res.ok) { toast.error(data.error || "Registration failed."); return; }
             setDone(true);
         } catch {
-            toast.error("Cannot reach server. Is node server/index.js running?");
+            toast.error("Cannot reach server. Is 'npm run server' running?");
         } finally {
             setLoading(false);
         }

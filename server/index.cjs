@@ -1,8 +1,8 @@
 /**
- * index.js — Fironix Express API Server
+ * index.cjs — Fironix Express API Server
  * 
- * Run with: node server/index.js
- * Or add to package.json: "server": "node server/index.js"
+ * Run with: node server/index.cjs
+ * Or add to package.json: "server": "node server/index.cjs"
  * 
  * Endpoints:
  *   POST /api/login              — Admin login (returns JWT)
@@ -18,7 +18,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { readDb, writeDb } = require("./db");
+const { readDb, writeDb } = require("./db.cjs");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
