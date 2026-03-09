@@ -37,6 +37,9 @@ jobs:
       - name: Build app
         run: npm run build
 
+      - name: Add SPA fallback for routes
+        run: cp dist/index.html dist/404.html
+
       - name: Add custom domain
         run: cp public/CNAME dist/CNAME
 
