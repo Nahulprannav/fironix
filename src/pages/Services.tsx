@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 
 const STATIC_SERVICES = [
   {
@@ -55,8 +55,8 @@ export default function Services() {
   const [dynamicServices, setDynamicServices] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get<any>("/data").then(data => {
-      if (data.services) setDynamicServices(data.services);
+    getCollection("services").then(data => {
+      if (data.length) setDynamicServices(data);
     }).catch(err => console.error("Failed to fetch services:", err));
   }, []);
 

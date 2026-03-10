@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { submitRegistration } from "@/lib/firestore";
 
 interface Props {
     isOpen: boolean;
@@ -32,10 +32,10 @@ export default function RegistrationModal({ isOpen, onClose, type, selection }: 
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post("/register", { name, email, phone, type, selection });
+            await submitRegistration({ name, email, phone, type, selection });
             setDone(true);
-        } catch {
-            toast.error("Cannot reach server. Is 'npm run server' running?");
+        } catch (err: any) {
+            toast.error(err.message || "Registration failed. Please try again.");
         } finally {
             setLoading(false);
         }

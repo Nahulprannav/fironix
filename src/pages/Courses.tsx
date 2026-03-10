@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 import { Code, Shield, Brain, BarChart, Gamepad, Camera, Video, PenTool, Sparkles, Cloud, Smartphone, Zap } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -136,8 +136,8 @@ export default function Courses() {
     const [dynamicCourses, setDynamicCourses] = useState<any[]>([]);
 
     useEffect(() => {
-        api.get<any>("/data").then(data => {
-            if (data.courses) setDynamicCourses(data.courses);
+        getCollection("courses").then(data => {
+            if (data.length) setDynamicCourses(data);
         }).catch(err => console.error("Failed to fetch courses:", err));
     }, []);
 

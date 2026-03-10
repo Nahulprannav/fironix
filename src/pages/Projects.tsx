@@ -4,7 +4,7 @@ import { motion, Variants } from "framer-motion";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 
 const STATIC_PROJECTS: Array<{
     title: string;
@@ -19,8 +19,8 @@ export default function Projects() {
     const [dynamicProjects, setDynamicProjects] = useState<any[]>([]);
 
     useEffect(() => {
-        api.get<any>("/data").then(data => {
-            if (data.projects) setDynamicProjects(data.projects);
+        getCollection("projects").then(data => {
+            if (data.length) setDynamicProjects(data);
         }).catch(err => console.error("Failed to fetch projects:", err));
     }, []);
 

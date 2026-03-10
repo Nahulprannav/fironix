@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { submitRegistration } from "@/lib/firestore";
+import { getPublicData } from "@/lib/firestore";
 
 // ---------------------------------------------------------------------------
 // Data: every registrable item keyed by a URL slug / param
@@ -72,15 +73,15 @@ export default function Register() {
     const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Fetch dynamic items from the database
+    // Fetch dynamic items from Firestore
     useEffect(() => {
-        api.get<any>("/data").then(data => {
+        getPublicData().then(data => {
             setDomainOptions(prev => ({
                 ...prev,
                 course: [...prev.course, ...(data.courses || [])],
                 internship: [...prev.internship, ...(data.internships || [])],
             }));
-        }).catch(err => console.error("Failed to fetch DB data:", err));
+        }).catch(err => console.error("Failed to fetch Firestore data:", err));
     }, []);
 
     const handleTypeSelect = (type: string) => {
@@ -102,12 +103,10 @@ export default function Register() {
         if (!name || !email) { toast.error("Please fill in your name and email."); return; }
         setLoading(true);
         try {
-            await api.post("/register", { name, email, phone, type: selectedType, selection: selectedDomain });
+            await submitRegistration({ name, email, phone, type: selectedType, selection: selectedDomain });
             setStep("success");
-        } catch {
-            // Fallback: if server is down, still show success (will be handled via email)
-            toast.warning("Server offline — your registration was noted. We'll follow up via email.");
-            setStep("success");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to submit. Please try again.");
         } finally {
             setLoading(false);
         }

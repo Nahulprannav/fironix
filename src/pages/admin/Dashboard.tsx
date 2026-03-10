@@ -8,11 +8,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import {
+    getCollection,
+    addItem,
+    updateItem,
+    deleteItem,
+    Collection,
+} from "@/lib/firestore";
 
-import { api } from "@/lib/api";
-
-type Collection = "courses" | "internships" | "projects" | "services" | "team" | "workshops";
-type Registration = { id: string; name: string; email: string; phone?: string; type: string; selection: string; timestamp: string; status: string };
+type Registration = { id: string; name: string; email: string; phone?: string; type: string; selection: string; _createdAt?: any; status: string };
 
 const TABS: { id: Collection | "registrations" | "home" | "import"; label: string; icon: LucideIcon }[] = [
     { id: "home", label: "Dashboard", icon: LayoutDashboard },
@@ -28,11 +34,7 @@ const TABS: { id: Collection | "registrations" | "home" | "import"; label: strin
 
 function StatsCard({ label, count, icon: Icon, color }: { label: string; count: number; icon: LucideIcon; color: string }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-panel p-6 rounded-2xl border-glow flex items-center gap-5"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-panel p-6 rounded-2xl border-glow flex items-center gap-5">
             <div className={`p-4 rounded-xl ${color}`}>
                 <Icon size={28} className={color.replace("bg-", "text-").replace("/10", "")} />
             </div>
@@ -46,10 +48,21 @@ function StatsCard({ label, count, icon: Icon, color }: { label: string; count: 
 
 type Tab = Collection | "registrations" | "home" | "import";
 
+const CONTENT_COLLECTIONS: Collection[] = ["courses", "internships", "projects", "services", "team", "workshops"];
+
+const defaultFieldsForTab: Record<string, string[]> = {
+    courses: ["title", "description", "duration", "price", "requirements", "skills_acquired", "modules"],
+    internships: ["title", "description", "duration", "stipend", "role", "requirements", "skills", "icon"],
+    projects: ["title", "description", "techStack", "githubLink", "image", "tags"],
+    services: ["title", "description", "details", "features", "slug"],
+    team: ["name", "photoURL", "role", "skills", "experience", "bio"],
+    workshops: ["title", "description", "date", "time", "location", "seats", "type", "color"],
+};
+
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const [tab, setTab] = useState<Tab>("home");
-    const [data, setData] = useState<Record<string, object[]>>({});
+    const [data, setData] = useState<Record<string, any[]>>({});
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [newItem, setNewItem] = useState<Record<string, string>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -57,38 +70,43 @@ export default function AdminDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [importJson, setImportJson] = useState("");
     const [importCollection, setImportCollection] = useState<Collection>("courses");
-    const adminUser = localStorage.getItem("fironix_admin_user") || "Admin";
-
-    const loadData = useCallback(async () => {
-        const token = localStorage.getItem("fironix_admin_token") || "";
-        try {
-            const db: any = await api.get("/admin/db", token);
-            setData(db);
-            setRegistrations(db.registrations || []);
-        } catch (err: any) {
-            if (err.message && (err.message.includes("Invalid") || err.message.includes("Access denied") || err.message.includes("Session expired"))) {
-                toast.error("Session expired. Please log in.");
-                localStorage.removeItem("fironix_admin_token");
-                localStorage.removeItem("fironix_admin_user");
-                navigate("/admin/login");
-            } else {
-                toast.error(
-                    err instanceof Error ? err.message : "⚠️ API server offline or inaccessible.",
-                    { duration: 8000 }
-                );
-            }
-        }
-    }, [navigate]);
+    const [adminUser, setAdminUser] = useState("Admin");
+    const [authChecked, setAuthChecked] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem("fironix_admin_token");
-        if (!token) { navigate("/admin/login"); return; }
-        loadData();
-    }, [navigate, loadData]);
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                navigate("/admin/login");
+            } else {
+                setAdminUser(user.email || "Admin");
+                setAuthChecked(true);
+            }
+        });
+        return unsub;
+    }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("fironix_admin_token");
-        localStorage.removeItem("fironix_admin_user");
+    const loadData = useCallback(async () => {
+        try {
+            const [regs, ...colData] = await Promise.all([
+                getCollection("registrations"),
+                ...CONTENT_COLLECTIONS.map((col) => getCollection(col)),
+            ]);
+
+            const newData: Record<string, any[]> = {};
+            CONTENT_COLLECTIONS.forEach((col, i) => { newData[col] = colData[i]; });
+            setData(newData);
+            setRegistrations(regs as Registration[]);
+        } catch (err: any) {
+            toast.error(err.message || "Failed to load data from Firebase.");
+        }
+    }, []);
+
+    useEffect(() => {
+        if (authChecked) loadData();
+    }, [authChecked, loadData]);
+
+    const handleLogout = async () => {
+        await signOut(auth);
         navigate("/admin/login");
     };
 
@@ -96,89 +114,74 @@ export default function AdminDashboard() {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         const filled = Object.values(newItem).filter(Boolean);
         if (filled.length === 0) { toast.error("Please fill in at least one field."); return; }
-        const token = localStorage.getItem("fironix_admin_token") || "";
 
-        // Special handling for complex fields
-        const processedItem = { ...newItem };
+        const processedItem: Record<string, unknown> = { ...newItem };
         if (tab === "courses" && typeof processedItem.modules === "string") {
-            try {
-                processedItem.modules = JSON.parse(processedItem.modules);
-            } catch (e) {
-                console.log("Modules not valid JSON, sending as string");
-            }
+            try { processedItem.modules = JSON.parse(processedItem.modules); } catch { /* keep as string */ }
         }
 
         try {
-            await api.post(`/admin/content/${tab}`, processedItem, token);
+            await addItem(tab as Collection, processedItem);
             toast.success("Item added!");
             setNewItem({});
             await loadData();
         } catch (err: any) {
-            toast.error(err instanceof Error ? err.message : "Failed to add item.");
+            toast.error(err.message || "Failed to add item.");
         }
     };
 
     const handleDelete = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         if (!confirm("Delete this item? This cannot be undone.")) return;
-
         try {
-            const token = localStorage.getItem("fironix_admin_token") || "";
-            await api.del(`/admin/content/${tab}/${id}`, token);
+            await deleteItem(tab as Collection, id);
             toast.success("Deleted.");
             await loadData();
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : "Failed to delete item.");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to delete item.");
         }
     };
 
     const handleEditSave = async (id: string) => {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
-
         try {
-            const token = localStorage.getItem("fironix_admin_token") || "";
-            await api.put(`/admin/content/${tab}/${id}`, editValues, token);
+            await updateItem(tab as Collection, id, editValues);
             toast.success("Updated.");
             setEditingId(null);
             await loadData();
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : "Failed to update item.");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to update item.");
         }
     };
 
     const handleImport = async () => {
         let parsed: object[];
         try { parsed = JSON.parse(importJson); }
-        catch { toast.error("Invalid JSON. Please check your input."); return; }
-        if (!Array.isArray(parsed)) { toast.error("JSON must be an array of objects [ {...}, {...} ]"); return; }
-
+        catch { toast.error("Invalid JSON."); return; }
+        if (!Array.isArray(parsed)) { toast.error("JSON must be an array."); return; }
         try {
-            let count = 0;
-            const token = localStorage.getItem("fironix_admin_token") || "";
-            for (const item of parsed) {
-                await api.post(`/admin/content/${importCollection}`, item, token);
-                count++;
-            }
-            toast.success(`Imported ${count} item${count !== 1 ? "s" : ""} into ${importCollection}.`);
+            for (const item of parsed) await addItem(importCollection, item as Record<string, unknown>);
+            toast.success(`Imported ${parsed.length} item(s) into ${importCollection}.`);
             setImportJson("");
             await loadData();
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : "Import failed.");
+        } catch (err: any) {
+            toast.error(err.message || "Import failed.");
         }
     };
 
-    const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import") ? (data[tab] as (Record<string, string>)[] || []) : [];
-
-    const defaultFieldsForTab: Record<string, string[]> = {
-        courses: ["title", "description", "duration", "price", "requirements", "skills_acquired", "modules"],
-        internships: ["title", "description", "duration", "stipend", "role", "requirements", "skills", "icon"],
-        projects: ["title", "description", "techStack", "githubLink", "image", "tags"],
-        services: ["title", "description", "details", "features", "slug"],
-        team: ["name", "photoURL", "role", "skills", "experience", "bio"],
-        workshops: ["title", "description", "date", "time", "location", "seats", "type", "color"]
-    };
+    const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import")
+        ? (data[tab] as any[] || [])
+        : [];
 
     const addEntryFields = defaultFieldsForTab[tab as string] || ["title", "description"];
+
+    if (!authChecked) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background flex">
@@ -188,7 +191,6 @@ export default function AdminDashboard() {
                 transition={{ type: "spring", stiffness: 200, damping: 30 }}
                 className="fixed top-0 left-0 h-full bg-card border-r border-border/60 flex flex-col z-40 overflow-hidden"
             >
-                {/* Logo */}
                 <div className="flex items-center gap-3 p-5 border-b border-border/60">
                     <ShieldCheck className="text-primary shrink-0" size={32} />
                     {sidebarOpen && (
@@ -197,8 +199,6 @@ export default function AdminDashboard() {
                         </motion.span>
                     )}
                 </div>
-
-                {/* Nav */}
                 <nav className="flex-1 p-3 space-y-1">
                     {TABS.map(({ id, label, icon: Icon }) => (
                         <button
@@ -211,8 +211,6 @@ export default function AdminDashboard() {
                         </button>
                     ))}
                 </nav>
-
-                {/* Collapse & Logout */}
                 <div className="p-3 border-t border-border/60 space-y-2">
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all">
                         <ChevronRight size={18} className={`transition-transform ${sidebarOpen ? "rotate-180" : ""}`} />
@@ -225,23 +223,21 @@ export default function AdminDashboard() {
                 </div>
             </motion.aside>
 
-            {/* Main content */}
+            {/* Main */}
             <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? "ml-[260px]" : "ml-[72px]"} p-8`}>
-
-                {/* Header */}
                 <div className="flex items-center justify-between mb-10">
                     <div>
                         <h1 className="font-display text-3xl font-bold text-foreground">
                             {tab === "home" ? `Welcome, ${adminUser}` : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Fironix Admin - Content Management System</p>
+                        <p className="text-muted-foreground text-sm mt-1">Fironix Admin — Firebase CMS</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={loadData} className="gap-2 rounded-xl">
                         <RefreshCw size={14} /> Refresh
                     </Button>
                 </div>
 
-                {/* HOME TAB */}
+                {/* HOME */}
                 {tab === "home" && (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                         <StatsCard label="Courses" count={data.courses?.length || 0} icon={BookOpen} color="bg-primary/10" />
@@ -254,7 +250,7 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* REGISTRATIONS TAB */}
+                {/* REGISTRATIONS */}
                 {tab === "registrations" && (
                     <div className="glass-panel rounded-2xl overflow-hidden border-glow">
                         <div className="overflow-x-auto">
@@ -276,7 +272,9 @@ export default function AdminDashboard() {
                                             <td className="px-5 py-3 text-muted-foreground">{reg.phone || "-"}</td>
                                             <td className="px-5 py-3"><span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs border border-primary/20">{reg.type}</span></td>
                                             <td className="px-5 py-3">{reg.selection}</td>
-                                            <td className="px-5 py-3 text-muted-foreground">{new Date(reg.timestamp).toLocaleDateString()}</td>
+                                            <td className="px-5 py-3 text-muted-foreground">
+                                                {reg._createdAt?.toDate ? reg._createdAt.toDate().toLocaleDateString() : "—"}
+                                            </td>
                                             <td className="px-5 py-3"><span className="bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full text-xs border border-green-500/20">{reg.status}</span></td>
                                         </tr>
                                     ))}
@@ -286,47 +284,37 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* CODE IMPORT TAB */}
+                {/* CODE IMPORT */}
                 {tab === "import" && (
                     <div className="glass-panel border-glow rounded-2xl p-8">
                         <div className="flex items-center gap-3 mb-6">
                             <Code2 size={20} className="text-primary" />
-                            <h2 className="font-bold text-xl text-foreground">Bulk Code Import</h2>
+                            <h2 className="font-bold text-xl text-foreground">Bulk JSON Import</h2>
                         </div>
                         <p className="text-muted-foreground text-sm mb-6">
-                            Paste a JSON array of objects below. Each object will be added as a new entry to the selected collection.
-                            <br />Example: <code className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-mono">{`[{"title":"Web Dev","description":"..."}]`}</code>
+                            Paste a JSON array of objects. Each object will be added to the selected Firestore collection.<br />
+                            Example: <code className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-mono">{`[{"title":"Web Dev","description":"..."}]`}</code>
                         </p>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-foreground mb-2">Target Collection</label>
-                                <select
-                                    value={importCollection}
-                                    onChange={e => setImportCollection(e.target.value as Collection)}
-                                    className="glass-panel border border-border/60 rounded-xl px-4 py-2.5 text-sm bg-card text-foreground w-full md:w-auto min-w-[200px]"
-                                >
-                                    {(["courses", "internships", "projects", "services", "team", "workshops"] as Collection[]).map(c => (
+                                <select value={importCollection} onChange={e => setImportCollection(e.target.value as Collection)}
+                                    className="glass-panel border border-border/60 rounded-xl px-4 py-2.5 text-sm bg-card text-foreground w-full md:w-auto min-w-[200px]">
+                                    {CONTENT_COLLECTIONS.map(c => (
                                         <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-foreground mb-2">JSON Data</label>
-                                <textarea
-                                    value={importJson}
-                                    onChange={e => setImportJson(e.target.value)}
-                                    rows={12}
+                                <textarea value={importJson} onChange={e => setImportJson(e.target.value)} rows={12}
                                     className="w-full glass-panel border border-border/50 rounded-xl p-4 text-sm font-mono bg-card text-foreground resize-y focus:border-primary/60 outline-none transition-colors"
-                                    placeholder={`[\n  {\n    "title": "New Course",\n    "description": "Course description here",\n    "duration": "12 weeks"\n  }\n]`}
+                                    placeholder={`[\n  {"title": "Course Name", "description": "..."}\n]`}
                                 />
                             </div>
                             <div className="flex gap-3">
-                                <Button onClick={handleImport} className="box-glow rounded-xl gap-2">
-                                    <Plus size={16} /> Import Data
-                                </Button>
-                                <Button variant="outline" onClick={() => setImportJson("")} className="rounded-xl">
-                                    Clear
-                                </Button>
+                                <Button onClick={handleImport} className="box-glow rounded-xl gap-2"><Plus size={16} /> Import Data</Button>
+                                <Button variant="outline" onClick={() => setImportJson("")} className="rounded-xl">Clear</Button>
                             </div>
                         </div>
                     </div>
@@ -335,30 +323,23 @@ export default function AdminDashboard() {
                 {/* COLLECTION TABS */}
                 {tab !== "home" && tab !== "registrations" && tab !== "import" && (
                     <div className="space-y-6">
-                        {/* Add New Item */}
                         <div className="glass-panel border-glow rounded-2xl p-6">
                             <h3 className="font-bold text-lg mb-5 flex items-center gap-2"><Plus size={18} className="text-primary" /> Add New Entry</h3>
                             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                 {addEntryFields.map(k => (
                                     <div key={k}>
                                         <label className="block text-xs font-semibold text-muted-foreground mb-1 capitalize">{k.replace("_", " ")}</label>
-                                        <Input
-                                            value={newItem[k] || ""}
-                                            onChange={e => setNewItem(prev => ({ ...prev, [k]: e.target.value }))}
+                                        <Input value={newItem[k] || ""} onChange={e => setNewItem(prev => ({ ...prev, [k]: e.target.value }))}
                                             placeholder={k.charAt(0).toUpperCase() + k.slice(1).replace("_", " ")}
-                                            className="glass-panel border-border/50 h-10"
-                                        />
+                                            className="glass-panel border-border/50 h-10" />
                                     </div>
                                 ))}
                                 <div className="flex items-end">
-                                    <Button onClick={handleAdd} className="box-glow w-full gap-2 rounded-xl">
-                                        <Plus size={16} /> Add Entry
-                                    </Button>
+                                    <Button onClick={handleAdd} className="box-glow w-full gap-2 rounded-xl"><Plus size={16} /> Add Entry</Button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Existing Items */}
                         <div className="glass-panel border-glow rounded-2xl overflow-hidden">
                             {currentItems.length === 0 ? (
                                 <div className="text-center py-20 text-muted-foreground">
@@ -371,22 +352,19 @@ export default function AdminDashboard() {
                                         <div key={item.id} className="p-5 flex items-start gap-4 hover:bg-secondary/10 transition-colors">
                                             {editingId === item.id ? (
                                                 <div className="flex-1 grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                                    {Object.keys(item).filter(k => k !== "id").map(k => (
-                                                        <Input
-                                                            key={k}
+                                                    {Object.keys(item).filter(k => k !== "id" && !k.startsWith("_")).map(k => (
+                                                        <Input key={k}
                                                             value={editValues[k] ?? (typeof item[k] === "object" ? JSON.stringify(item[k]) : item[k])}
                                                             onChange={e => setEditValues(prev => ({ ...prev, [k]: e.target.value }))}
-                                                            className="glass-panel border-border/50 h-9"
-                                                            placeholder={k}
-                                                        />
+                                                            className="glass-panel border-border/50 h-9" placeholder={k} />
                                                     ))}
                                                 </div>
                                             ) : (
                                                 <div className="flex-1 grid sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1">
-                                                    {Object.entries(item).filter(([k]) => k !== "id").map(([k, v]) => (
+                                                    {Object.entries(item).filter(([k]) => k !== "id" && !k.startsWith("_")).map(([k, v]) => (
                                                         <div key={k}>
                                                             <span className="text-xs text-muted-foreground capitalize">{k}: </span>
-                                                            <span className="text-sm text-foreground font-medium">{typeof v === "object" ? "[Complex Data]" : v}</span>
+                                                            <span className="text-sm text-foreground font-medium">{typeof v === "object" ? "[Complex]" : String(v)}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -395,7 +373,7 @@ export default function AdminDashboard() {
                                                 {editingId === item.id ? (
                                                     <>
                                                         <Button size="icon" variant="ghost" className="rounded-xl w-8 h-8 hover:text-green-400" onClick={() => handleEditSave(item.id)}><Check size={15} /></Button>
-                                                        <Button size="icon" variant="ghost" className="rounded-xl w-8 h-8 hover:text-muted-foreground" onClick={() => setEditingId(null)}><X size={15} /></Button>
+                                                        <Button size="icon" variant="ghost" className="rounded-xl w-8 h-8" onClick={() => setEditingId(null)}><X size={15} /></Button>
                                                     </>
                                                 ) : (
                                                     <>

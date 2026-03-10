@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Link } from "react-router-dom";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 import { User, Stars, Briefcase } from "lucide-react";
 
 type TeamMember = {
@@ -48,13 +48,10 @@ export default function TeamSection() {
   useEffect(() => {
     let active = true;
 
-    api
-      .get<{ team?: unknown }>("/data")
-      .then((data) => {
+    getCollection("team")
+      .then((items) => {
         if (!active) return;
-        if (Array.isArray(data.team)) {
-          setDynamicTeam(data.team as DynamicTeamMember[]);
-        }
+        setDynamicTeam(items as DynamicTeamMember[]);
       })
       .catch((err) => console.error("Failed to fetch team:", err));
 

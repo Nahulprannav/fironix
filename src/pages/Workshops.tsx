@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 
 const WORKSHOP_KEYS: Record<string, string> = {
     "Mastering React 19 State Architecture": "workshop-react-19",
@@ -50,8 +50,8 @@ export default function Workshops() {
     const [dynamicWorkshops, setDynamicWorkshops] = useState<any[]>([]);
 
     useEffect(() => {
-        api.get<any>("/data").then(data => {
-            if (data.workshops) setDynamicWorkshops(data.workshops);
+        getCollection("workshops").then(data => {
+            if (data.length) setDynamicWorkshops(data);
         }).catch(err => console.error("Failed to fetch workshops:", err));
     }, []);
 

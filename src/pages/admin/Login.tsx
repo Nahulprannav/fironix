@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
-import { api } from "@/lib/api";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function AdminLogin() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPw, setShowPw] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -20,16 +20,18 @@ export default function AdminLogin() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
         try {
-            const data: any = await api.post("/login", { username, password });
-
-            localStorage.setItem("fironix_admin_token", data.token);
-            localStorage.setItem("fironix_admin_user", data.username);
+            const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+            localStorage.setItem("fironix_admin_user", cred.user.email || "admin");
             toast.success("Welcome back, Admin!");
             navigate("/admin/dashboard");
         } catch (err: any) {
-            toast.error(err.message || "Login failed. Please check your credentials.");
+            const msg = err.code === "auth/invalid-credential" || err.code === "auth/wrong-password"
+                ? "Invalid email or password."
+                : err.code === "auth/user-not-found"
+                    ? "No admin account found. Please create one in Firebase Console."
+                    : err.message || "Login failed.";
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -53,7 +55,6 @@ export default function AdminLogin() {
                 <div className="glass-panel border-glow rounded-3xl p-8 md:p-12 relative overflow-hidden">
                     <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/10 rounded-full blur-[60px]" />
 
-                    {/* Header */}
                     <div className="text-center mb-10 relative z-10">
                         <div className="inline-flex p-4 rounded-2xl bg-primary/10 text-primary mb-6 shadow-[0_0_20px_hsl(187_80%_50%_/_0.2)]">
                             <ShieldCheck size={40} />
@@ -66,19 +67,18 @@ export default function AdminLogin() {
                         </div>
                     </div>
 
-                    {/* Form */}
                     <form onSubmit={handleLogin} className="space-y-6 relative z-10">
                         <div className="space-y-2">
-                            <Label htmlFor="username" className="text-foreground font-medium">Username</Label>
+                            <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
                             <Input
-                                id="username"
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="admin"
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="admin@fironix.in"
                                 className="glass-panel border-border/60 focus:border-primary/60 h-12 text-base"
                                 required
-                                autoComplete="username"
+                                autoComplete="email"
                             />
                         </div>
                         <div className="space-y-2">
@@ -113,9 +113,7 @@ export default function AdminLogin() {
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                             ) : (
-                                <>
-                                    <LogIn size={18} className="mr-2" /> Sign In
-                                </>
+                                <><LogIn size={18} className="mr-2" /> Sign In</>
                             )}
                         </Button>
                     </form>

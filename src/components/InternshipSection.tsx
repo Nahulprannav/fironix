@@ -4,7 +4,7 @@ import { ArrowRight, Award, BarChart3, BookOpen, Brain, Gamepad2, Globe, Shield,
 import { Button } from "@/components/ui/button";
 import { INTERNSHIP_FORM_URL } from "@/lib/site";
 import { motion, Variants } from "framer-motion";
-import { api } from "@/lib/api";
+import { getCollection } from "@/lib/firestore";
 
 type InternshipProgram = {
   title: string;
@@ -73,13 +73,10 @@ export default function InternshipSection() {
   useEffect(() => {
     let active = true;
 
-    api
-      .get<{ internships?: unknown }>("/data")
-      .then((data) => {
+    getCollection("internships")
+      .then((items) => {
         if (!active) return;
-        if (Array.isArray(data.internships)) {
-          setDynamicInternships(data.internships as DynamicInternship[]);
-        }
+        setDynamicInternships(items as DynamicInternship[]);
       })
       .catch((err) => console.error("Failed to fetch internships:", err));
 
