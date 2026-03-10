@@ -194,7 +194,7 @@ app.delete("/api/admin/content/:collection/:id", authenticate, (req, res) => {
 });
 
 // SPA fallback: Return index.html for any unknown routes
-app.get("/{*path}", (req, res) => {
+app.get("*", (req, res) => {
     // If it's an API route that reached here, it's a 404 for the API
     if (req.path.startsWith("/api/")) {
         return res.status(404).json({ error: "API route not found" });
