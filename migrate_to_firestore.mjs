@@ -12,14 +12,13 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(app, "default");
 
 const DB_PATH = "c:\\Users\\nahul\\Desktop\\fironix website\\fironix\\legacy_db.json";
 
 async function migrate() {
     console.log("Reading data from:", DB_PATH);
     const rawData = fs.readFileSync(DB_PATH, "utf8").trim();
-    // remove potential BOM or leading junk
     const jsonStr = rawData.substring(rawData.indexOf('{'));
     const data = JSON.parse(jsonStr);
 
@@ -32,9 +31,14 @@ async function migrate() {
                 ...rest,
                 _createdAt: serverTimestamp(),
             });
+            console.log(`Added to ${col}`);
         }
     }
     console.log("Migration complete!");
+    process.exit(0);
 }
 
-migrate().catch(console.error);
+migrate().catch(e => {
+    console.error(e);
+    process.exit(1);
+});
