@@ -57,6 +57,7 @@ function getDefaultDb() {
         services: [],
         team: [],
         registrations: [],
+        workshops: [],
     };
 }
 

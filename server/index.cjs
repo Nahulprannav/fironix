@@ -18,6 +18,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const { readDb, writeDb } = require("./db.cjs");
 
 const app = express();
@@ -46,8 +47,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// ------------------------------------
-// Auth Middleware
+// Serve static files from the frontend build (dist folder)
+const distPath = path.join(__dirname, "../dist");
+app.use(express.static(distPath));
+
+// Auth Middleware... (keep as is)
 // ------------------------------------
 function authenticate(req, res, next) {
     const authHeader = req.headers["authorization"];
@@ -105,6 +109,7 @@ app.get("/api/data", (req, res) => {
         internships: db.internships,
         projects: db.projects,
         team: db.team,
+        workshops: db.workshops || [],
     });
 });
 
@@ -186,6 +191,16 @@ app.delete("/api/admin/content/:collection/:id", authenticate, (req, res) => {
 
     writeDb(db);
     res.json({ message: "Deleted successfully." });
+});
+
+// SPA fallback: Return index.html for any unknown routes
+app.get("/{*path}", (req, res) => {
+    // If it's an API route that reached here, it's a 404 for the API
+    if (req.path.startsWith("/api/")) {
+        return res.status(404).json({ error: "API route not found" });
+    }
+    // Otherwise, serve index.html for React Router to handle (SPA)
+    res.sendFile(path.join(distPath, "index.html"));
 });
 
 // ------------------------------------

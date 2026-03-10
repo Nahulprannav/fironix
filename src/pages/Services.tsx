@@ -119,7 +119,7 @@ export default function Services() {
                     <h3 className="font-display text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">{service.title}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{service.desc}</p>
                     <div className="flex flex-wrap gap-2">
-                      {service.features.map((feature) => (
+                      {(Array.isArray(service.features) ? service.features : (typeof service.features === "string" ? service.features.split(",").map((f: string) => f.trim()) : [])).map((feature: string) => (
                         <span key={feature} className="px-3 py-1 text-xs rounded-full bg-secondary/50 text-secondary-foreground border border-border">
                           {feature}
                         </span>

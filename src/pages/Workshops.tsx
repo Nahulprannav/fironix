@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, Clock, MapPin, Users, Zap } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 
 const WORKSHOP_KEYS: Record<string, string> = {
     "Mastering React 19 State Architecture": "workshop-react-19",
@@ -46,8 +47,24 @@ const WORKSHOPS = [
 
 export default function Workshops() {
     const navigate = useNavigate();
-    const [, setUnused] = useState(false);
-    void setUnused;
+    const [dynamicWorkshops, setDynamicWorkshops] = useState<any[]>([]);
+
+    useEffect(() => {
+        api.get<any>("/data").then(data => {
+            if (data.workshops) setDynamicWorkshops(data.workshops);
+        }).catch(err => console.error("Failed to fetch workshops:", err));
+    }, []);
+
+    const allWorkshops = [
+        ...WORKSHOPS,
+        ...dynamicWorkshops.map(w => ({
+            ...w,
+            color: w.color || "hsl(187 80% 50%)",
+            colorClass: w.colorClass || "text-primary bg-primary/10 border-primary/20",
+            seats: w.seats || "TBD",
+            type: w.type || "Special"
+        }))
+    ];
 
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
@@ -71,17 +88,17 @@ export default function Workshops() {
                 </motion.div>
 
                 <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
-                    {WORKSHOPS.map((workshop, idx) => (
+                    {allWorkshops.map((workshop, idx) => (
                         <motion.div key={idx} variants={itemVariants} className="interactive-card glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden group border-glow">
                             <div className="absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 group-hover:w-2" style={{ backgroundColor: workshop.color }} />
                             <div className="flex-1">
                                 <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-4 border ${workshop.colorClass}`}>{workshop.type} Level</span>
                                 <h2 className="font-display text-2xl font-bold mb-3 text-foreground group-hover:text-glow transition-all">{workshop.title}</h2>
-                                <p className="text-muted-foreground leading-relaxed mb-6">{workshop.description}</p>
+                                <p className="text-muted-foreground leading-relaxed mb-6">{workshop.description || workshop.desc}</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-medium text-foreground/80">
-                                    <div className="flex items-center gap-2"><Calendar size={16} className="text-primary shrink-0" /> {workshop.date}</div>
-                                    <div className="flex items-center gap-2"><Clock size={16} className="text-primary shrink-0" /> {workshop.time}</div>
-                                    <div className="flex items-center gap-2"><MapPin size={16} className="text-primary shrink-0" /> {workshop.location}</div>
+                                    <div className="flex items-center gap-2"><Calendar size={16} className="text-primary shrink-0" /> {workshop.date || "TBD"}</div>
+                                    <div className="flex items-center gap-2"><Clock size={16} className="text-primary shrink-0" /> {workshop.time || "TBD"}</div>
+                                    <div className="flex items-center gap-2"><MapPin size={16} className="text-primary shrink-0" /> {workshop.location || "Online"}</div>
                                     <div className="flex items-center gap-2"><Users size={16} className="text-primary shrink-0" /> {workshop.seats} Seats</div>
                                 </div>
                             </div>

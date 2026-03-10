@@ -98,7 +98,7 @@ export default function Projects() {
                                     </p>
 
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {project.tags.map(tag => (
+                                        {(Array.isArray(project.tags) ? project.tags : (typeof project.tags === "string" ? project.tags.split(",").map((t: string) => t.trim()) : [])).map((tag: string) => (
                                             <span key={tag} className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground border border-border/50">
                                                 {tag}
                                             </span>

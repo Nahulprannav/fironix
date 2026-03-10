@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import { api } from "@/lib/api";
 
-type Collection = "courses" | "internships" | "projects" | "services" | "team";
+type Collection = "courses" | "internships" | "projects" | "services" | "team" | "workshops";
 type Registration = { id: string; name: string; email: string; phone?: string; type: string; selection: string; timestamp: string; status: string };
 
 const TABS: { id: Collection | "registrations" | "home" | "import"; label: string; icon: LucideIcon }[] = [
@@ -21,6 +21,7 @@ const TABS: { id: Collection | "registrations" | "home" | "import"; label: strin
     { id: "projects", label: "Projects", icon: FolderOpen },
     { id: "services", label: "Services", icon: Settings },
     { id: "team", label: "Team", icon: Users },
+    { id: "workshops", label: "Workshops", icon: ClipboardList },
     { id: "registrations", label: "Registrations", icon: ClipboardList },
     { id: "import", label: "Code Import", icon: Code2 },
 ];
@@ -62,12 +63,20 @@ export default function AdminDashboard() {
         const token = localStorage.getItem("fironix_admin_token") || "";
         try {
             const db: any = await api.get("/admin/db", token);
-            if (db.error) { toast.error("Session expired. Please log in."); navigate("/admin/login"); return; }
             setData(db);
             setRegistrations(db.registrations || []);
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "API server offline. Open a second terminal and run: npm run server";
-            toast.error(message, { duration: 8000 });
+        } catch (err: any) {
+            if (err.message && (err.message.includes("Invalid") || err.message.includes("Access denied") || err.message.includes("Session expired"))) {
+                toast.error("Session expired. Please log in.");
+                localStorage.removeItem("fironix_admin_token");
+                localStorage.removeItem("fironix_admin_user");
+                navigate("/admin/login");
+            } else {
+                toast.error(
+                    err instanceof Error ? err.message : "⚠️ API server offline or inaccessible.",
+                    { duration: 8000 }
+                );
+            }
         }
     }, [navigate]);
 
@@ -87,14 +96,24 @@ export default function AdminDashboard() {
         if (tab === "registrations" || tab === "home" || tab === "import") return;
         const filled = Object.values(newItem).filter(Boolean);
         if (filled.length === 0) { toast.error("Please fill in at least one field."); return; }
+        const token = localStorage.getItem("fironix_admin_token") || "";
+
+        // Special handling for complex fields
+        const processedItem = { ...newItem };
+        if (tab === "courses" && typeof processedItem.modules === "string") {
+            try {
+                processedItem.modules = JSON.parse(processedItem.modules);
+            } catch (e) {
+                console.log("Modules not valid JSON, sending as string");
+            }
+        }
 
         try {
-            const token = localStorage.getItem("fironix_admin_token") || "";
-            await api.post(`/admin/content/${tab}`, newItem, token);
+            await api.post(`/admin/content/${tab}`, processedItem, token);
             toast.success("Item added!");
             setNewItem({});
             await loadData();
-        } catch (err: unknown) {
+        } catch (err: any) {
             toast.error(err instanceof Error ? err.message : "Failed to add item.");
         }
     };
@@ -149,7 +168,17 @@ export default function AdminDashboard() {
     };
 
     const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import") ? (data[tab] as (Record<string, string>)[] || []) : [];
-    const fieldKeys = currentItems.length > 0 ? Object.keys(currentItems[0]).filter(k => k !== "id") : ["title", "description"];
+
+    const defaultFieldsForTab: Record<string, string[]> = {
+        courses: ["title", "description", "duration", "price", "requirements", "skills_acquired", "modules"],
+        internships: ["title", "description", "duration", "stipend", "role", "requirements", "skills", "icon"],
+        projects: ["title", "description", "techStack", "githubLink", "image", "tags"],
+        services: ["title", "description", "details", "features", "slug"],
+        team: ["name", "photoURL", "role", "skills", "experience", "bio"],
+        workshops: ["title", "description", "date", "time", "location", "seats", "type", "color"]
+    };
+
+    const addEntryFields = defaultFieldsForTab[tab as string] || ["title", "description"];
 
     return (
         <div className="min-h-screen bg-background flex">
@@ -220,6 +249,7 @@ export default function AdminDashboard() {
                         <StatsCard label="Projects" count={data.projects?.length || 0} icon={FolderOpen} color="bg-green-500/10" />
                         <StatsCard label="Services" count={data.services?.length || 0} icon={Settings} color="bg-purple-500/10" />
                         <StatsCard label="Team" count={data.team?.length || 0} icon={Users} color="bg-orange-500/10" />
+                        <StatsCard label="Workshops" count={data.workshops?.length || 0} icon={ClipboardList} color="bg-amber-500/10" />
                         <StatsCard label="Registrations" count={registrations.length} icon={ClipboardList} color="bg-accent/10" />
                     </div>
                 )}
@@ -275,7 +305,7 @@ export default function AdminDashboard() {
                                     onChange={e => setImportCollection(e.target.value as Collection)}
                                     className="glass-panel border border-border/60 rounded-xl px-4 py-2.5 text-sm bg-card text-foreground w-full md:w-auto min-w-[200px]"
                                 >
-                                    {(["courses", "internships", "projects", "services", "team"] as Collection[]).map(c => (
+                                    {(["courses", "internships", "projects", "services", "team", "workshops"] as Collection[]).map(c => (
                                         <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                                     ))}
                                 </select>
@@ -309,13 +339,13 @@ export default function AdminDashboard() {
                         <div className="glass-panel border-glow rounded-2xl p-6">
                             <h3 className="font-bold text-lg mb-5 flex items-center gap-2"><Plus size={18} className="text-primary" /> Add New Entry</h3>
                             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                                {fieldKeys.map(k => (
+                                {addEntryFields.map(k => (
                                     <div key={k}>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-1 capitalize">{k}</label>
+                                        <label className="block text-xs font-semibold text-muted-foreground mb-1 capitalize">{k.replace("_", " ")}</label>
                                         <Input
                                             value={newItem[k] || ""}
                                             onChange={e => setNewItem(prev => ({ ...prev, [k]: e.target.value }))}
-                                            placeholder={k.charAt(0).toUpperCase() + k.slice(1)}
+                                            placeholder={k.charAt(0).toUpperCase() + k.slice(1).replace("_", " ")}
                                             className="glass-panel border-border/50 h-10"
                                         />
                                     </div>
@@ -344,7 +374,7 @@ export default function AdminDashboard() {
                                                     {Object.keys(item).filter(k => k !== "id").map(k => (
                                                         <Input
                                                             key={k}
-                                                            value={editValues[k] ?? item[k]}
+                                                            value={editValues[k] ?? (typeof item[k] === "object" ? JSON.stringify(item[k]) : item[k])}
                                                             onChange={e => setEditValues(prev => ({ ...prev, [k]: e.target.value }))}
                                                             className="glass-panel border-border/50 h-9"
                                                             placeholder={k}
@@ -356,7 +386,7 @@ export default function AdminDashboard() {
                                                     {Object.entries(item).filter(([k]) => k !== "id").map(([k, v]) => (
                                                         <div key={k}>
                                                             <span className="text-xs text-muted-foreground capitalize">{k}: </span>
-                                                            <span className="text-sm text-foreground font-medium">{v}</span>
+                                                            <span className="text-sm text-foreground font-medium">{typeof v === "object" ? "[Complex Data]" : v}</span>
                                                         </div>
                                                     ))}
                                                 </div>

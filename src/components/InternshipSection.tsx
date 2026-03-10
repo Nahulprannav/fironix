@@ -154,10 +154,10 @@ export default function InternshipSection() {
               viewport={{ once: true }}
               className="flex flex-wrap gap-3 mb-8 justify-center"
             >
-              {allInternships.map((program) => (
+              {allInternships.map((program, idx) => (
                 <motion.div
                   variants={itemVariants}
-                  key={program.title}
+                  key={program.title + idx}
                   className="glass-panel interactive-card flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-foreground"
                 >
                   <program.icon size={16} className="text-primary" />
@@ -208,8 +208,8 @@ export default function InternshipSection() {
             viewport={{ once: true, margin: "-50px" }}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {allInternships.map((program) => (
-              <motion.div variants={itemVariants} key={program.title} className="interactive-card glass-panel p-6 rounded-xl border-glow">
+            {allInternships.map((program, idx) => (
+              <motion.div variants={itemVariants} key={program.title + idx} className="interactive-card glass-panel p-6 rounded-xl border-glow">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-primary/10 rounded-lg text-primary">
                     <program.icon size={24} />
