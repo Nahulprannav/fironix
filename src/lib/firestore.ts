@@ -93,8 +93,15 @@ export async function updateItem(
 
 // ─── Delete a document ────────────────────────────────────────────────────────
 export async function deleteItem(col: Collection, id: string): Promise<void> {
-    await deleteDoc(doc(db, col, id));
-    clearCacheForCollection(col); // Invalidate cache
+    console.log(`[Firestore] Deleting doc: ${col}/${id}`);
+    try {
+        await deleteDoc(doc(db, col, id));
+        console.log(`[Firestore] Successfully deleted ${col}/${id}`);
+        clearCacheForCollection(col); // Invalidate cache
+    } catch (error) {
+        console.error(`[Firestore] Error deleting ${col}/${id}:`, error);
+        throw error;
+    }
 }
 
 // ─── Get all public content in one call (mirrors old /api/data) ───────────────

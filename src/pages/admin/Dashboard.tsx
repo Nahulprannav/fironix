@@ -133,13 +133,19 @@ export default function AdminDashboard() {
 
     const handleDelete = async (id: string, customTab?: string) => {
         const targetTab = customTab || tab;
-        if (targetTab === "home" || targetTab === "import") return;
-        if (!confirm("Delete this item? This cannot be undone.")) return;
+        console.log(`[Dashboard] Attempting to delete from ${targetTab} with ID: ${id}`);
+        if (targetTab === "home" || targetTab === "import") {
+            console.warn("[Dashboard] Cannot delete from home or import tab.");
+            return;
+        }
+        if (!confirm(`Delete this item from ${targetTab}? This cannot be undone.`)) return;
         try {
             await deleteItem(targetTab as Collection, id);
+            console.log("[Dashboard] Delete successful.");
             toast.success("Deleted.");
             await loadData();
         } catch (err: any) {
+            console.error("[Dashboard] Delete failed:", err);
             toast.error(err.message || "Failed to delete item.");
         }
     };
@@ -190,7 +196,17 @@ export default function AdminDashboard() {
         const worksheet = XLSX.utils.json_to_sheet(formattedData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
-        XLSX.writeFile(workbook, "Fironix_Registrations.xlsx");
+        
+        // Use a more robust blob-based download for browser compatibility
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const dataBlob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = window.URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `Fironix_Registrations_${new Date().toLocaleDateString()}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        toast.success("Excel file generated!");
     };
 
     const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import")
