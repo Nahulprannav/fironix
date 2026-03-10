@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Briefcase, CheckCircle2, ChevronRight, Mail, Phone, Sparkles, User, Wrench } from "lucide-react";
@@ -45,12 +45,6 @@ const TYPE_OPTIONS = [
     { id: "internship", icon: Briefcase, label: "Internship", desc: "Real-world experience" },
 ];
 
-const DOMAIN_OPTIONS: Record<string, string[]> = {
-    course: ["Web Development (MERN)", "Cyber Security", "Machine Learning (ML)", "Data Analytics", "Game Development", "Photography", "Video Editing", "Figma (UI & UX)", "Vibe Coding", "Cloud Computing", "App Development"],
-    workshop: ["React 19 State Architecture", "Offensive Penetration Testing", "Zero-Latency Docker Pipelines", "Figma to Framer Motion"],
-    internship: ["Software Development Intern", "UI/UX Design Intern", "Digital Marketing Intern", "Data Science Intern"],
-};
-
 type Step = "type" | "domain" | "details" | "success";
 
 export default function Register() {
@@ -65,19 +59,41 @@ export default function Register() {
     const [selectedType, setSelectedType] = useState<string>(preData?.type ?? "");
     const [selectedDomain, setSelectedDomain] = useState<string>(preData?.label ?? "");
 
+    const [domainOptions, setDomainOptions] = useState<Record<string, any[]>>({
+        course: Object.entries(REGISTER_MAP).filter(([_, v]) => v.type === "course").map(([k, v]) => ({ title: v.label, slug: k })),
+        workshop: Object.entries(REGISTER_MAP).filter(([_, v]) => v.type === "workshop").map(([k, v]) => ({ title: v.label, slug: k })),
+        internship: Object.entries(REGISTER_MAP).filter(([_, v]) => v.type === "internship").map(([k, v]) => ({ title: v.label, slug: k })),
+    });
+
+    const [, setSelectedProgram] = useState<any>(null);
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Fetch dynamic items from the database
+    useEffect(() => {
+        api.get<any>("/data").then(data => {
+            setDomainOptions(prev => ({
+                ...prev,
+                course: [...prev.course, ...(data.courses || [])],
+                internship: [...prev.internship, ...(data.internships || [])],
+            }));
+        }).catch(err => console.error("Failed to fetch DB data:", err));
+    }, []);
+
     const handleTypeSelect = (type: string) => {
         setSelectedType(type);
         setSelectedDomain("");
+        setSelectedProgram(null);
         setStep("domain");
     };
 
-    const handleDomainSelect = (domain: string) => {
-        setSelectedDomain(domain);
+    const handleDomainSelect = (program: any) => {
+        const title = program.title || program.label;
+        setSelectedDomain(title);
+        setSelectedProgram(program);
         setStep("details");
     };
 
@@ -155,9 +171,9 @@ export default function Register() {
                                 <p className="text-muted-foreground">Select a specific programme to register for.</p>
                             </div>
                             <div className="grid gap-3">
-                                {(DOMAIN_OPTIONS[selectedType] ?? []).map((domain) => (
-                                    <button key={domain} onClick={() => handleDomainSelect(domain)} className="glass-panel rounded-xl p-4 text-left flex items-center justify-between interactive-card hover:border-primary/50 group transition-all">
-                                        <span className="font-medium text-foreground">{domain}</span>
+                                {(domainOptions[selectedType] ?? []).map((program, idx) => (
+                                    <button key={idx} onClick={() => handleDomainSelect(program)} className="glass-panel rounded-xl p-4 text-left flex items-center justify-between interactive-card hover:border-primary/50 group transition-all">
+                                        <span className="font-medium text-foreground">{program.title || program.label}</span>
                                         <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </button>
                                 ))}
@@ -169,13 +185,12 @@ export default function Register() {
                     {/* STEP 3 — Details */}
                     {step === "details" && (
                         <motion.div key="details" variants={fadeIn} initial="hidden" animate="show" exit={{ opacity: 0, y: -20 }}>
-                            <div className="glass-panel border-glow rounded-3xl p-8 md:p-12">
-                                <div className="text-center mb-8">
+                            <div className="glass-panel border-glow rounded-3xl p-8">
+                                <div className="text-center mb-10">
                                     <div className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-4 border border-primary/20">
                                         {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
                                     </div>
-                                    <h2 className="font-display text-2xl font-bold mb-1 text-foreground">{selectedDomain}</h2>
-                                    <p className="text-muted-foreground text-sm">Enter your details to complete Registration</p>
+                                    <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{selectedDomain}</h2>
                                 </div>
                                 <form onSubmit={handleSubmit} className="space-y-5">
                                     <div className="space-y-2">
@@ -203,7 +218,7 @@ export default function Register() {
                                         {loading ? <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> : "Complete Registration 🎉"}
                                     </Button>
                                 </form>
-                                {!preData && <Button variant="ghost" className="w-full mt-3" onClick={() => setStep("domain")}>← Change selection</Button>}
+                                {!preKey && <Button variant="ghost" className="w-full mt-3" onClick={() => setStep("domain")}>← Change selection</Button>}
                             </div>
                         </motion.div>
                     )}

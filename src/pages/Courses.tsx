@@ -197,6 +197,24 @@ export default function Courses() {
                                         <div className="flex-1">
                                             <h2 className="font-display text-3xl font-bold mb-3 text-foreground">{course.title}</h2>
                                             <p className="text-xl text-muted-foreground leading-relaxed mb-6">{description}</p>
+
+                                            {(course.requirements || course.skills_acquired) && (
+                                                <div className="grid sm:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50">
+                                                    {course.requirements && (
+                                                        <div>
+                                                            <h4 className="text-sm font-bold uppercase tracking-wider text-accent mb-2">Requirements</h4>
+                                                            <p className="text-sm text-muted-foreground">{course.requirements}</p>
+                                                        </div>
+                                                    )}
+                                                    {course.skills_acquired && (
+                                                        <div>
+                                                            <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-2">Skills You'll Master</h4>
+                                                            <p className="text-sm text-muted-foreground">{course.skills_acquired}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             <Button size="lg" className="box-glow hover:-translate-y-1 transition-transform rounded-full" onClick={() => navigate(`/register?key=${encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, "-"))}`)}>
                                                 Register for Course
                                             </Button>

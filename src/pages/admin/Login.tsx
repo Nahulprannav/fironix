@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, LogIn, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Lock, LogIn, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,10 @@ export default function AdminLogin() {
         <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px]" />
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px]" />
+
+            <Link to="/" className="absolute top-8 left-8 inline-flex items-center text-muted-foreground hover:text-primary transition-colors group z-20">
+                <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Home
+            </Link>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

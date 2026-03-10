@@ -3,9 +3,9 @@
  * Uses /api by default and supports overriding via VITE_API_BASE_URL.
  */
 const ENV_API_BASE = import.meta.env.VITE_API_BASE_URL?.trim();
-export const API_BASE = ENV_API_BASE
-    ? ENV_API_BASE.replace(/\/+$/, "")
-    : "/api";
+const VITE_API_URL = import.meta.env.VITE_API_URL?.trim();
+
+export const API_BASE = VITE_API_URL || ENV_API_BASE || "/api";
 
 const IS_LOCAL_DEV_HOST = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 const LOCAL_FALLBACK_ENABLED = !ENV_API_BASE && !IS_LOCAL_DEV_HOST;
