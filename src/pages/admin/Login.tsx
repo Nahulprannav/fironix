@@ -75,7 +75,7 @@ export default function AdminLogin() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="admin@fironix.in"
+                                placeholder="Enter admin email"
                                 className="glass-panel border-border/60 focus:border-primary/60 h-12 text-base"
                                 required
                                 autoComplete="email"

@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
     LayoutDashboard, BookOpen, Briefcase, FolderOpen, Settings, Users, LogOut,
-    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon, Code2
+    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon, Code2, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import * as XLSX from "xlsx";
 import {
     getCollection,
     addItem,
@@ -130,11 +131,12 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (tab === "registrations" || tab === "home" || tab === "import") return;
+    const handleDelete = async (id: string, customTab?: string) => {
+        const targetTab = customTab || tab;
+        if (targetTab === "home" || targetTab === "import") return;
         if (!confirm("Delete this item? This cannot be undone.")) return;
         try {
-            await deleteItem(tab as Collection, id);
+            await deleteItem(targetTab as Collection, id);
             toast.success("Deleted.");
             await loadData();
         } catch (err: any) {
@@ -167,6 +169,28 @@ export default function AdminDashboard() {
         } catch (err: any) {
             toast.error(err.message || "Import failed.");
         }
+    };
+
+    const handleDownloadExcel = () => {
+        if (registrations.length === 0) {
+            toast.error("No data to download.");
+            return;
+        }
+
+        const formattedData = registrations.map((r) => ({
+            Name: r.name,
+            Email: r.email,
+            Phone: r.phone || "-",
+            Type: r.type,
+            Selection: r.selection,
+            Date: r._createdAt?.toDate ? r._createdAt.toDate().toLocaleDateString() : "-",
+            Status: r.status,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+        XLSX.writeFile(workbook, "Fironix_Registrations.xlsx");
     };
 
     const currentItems = (tab !== "home" && tab !== "registrations" && tab !== "import")
@@ -253,18 +277,22 @@ export default function AdminDashboard() {
                 {/* REGISTRATIONS */}
                 {tab === "registrations" && (
                     <div className="glass-panel rounded-2xl overflow-hidden border-glow">
+                        <div className="flex justify-between items-center p-4 border-b border-border/60 bg-secondary/10">
+                            <h2 className="font-bold text-lg text-foreground px-2">Registered Users</h2>
+                            <Button onClick={handleDownloadExcel} size="sm" className="gap-2 bg-green-500/20 text-green-500 hover:bg-green-500/30 border border-green-500/30"><Download size={16} /> Export to Excel</Button>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="border-b border-border/60">
                                     <tr className="text-left">
-                                        {["Name", "Email", "Phone", "Type", "Selection", "Date", "Status"].map(h => (
+                                        {["Name", "Email", "Phone", "Type", "Selection", "Date", "Status", "Actions"].map(h => (
                                             <th key={h} className="px-5 py-4 font-semibold text-muted-foreground">{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {registrations.length === 0 ? (
-                                        <tr><td colSpan={7} className="text-center py-16 text-muted-foreground">No registrations yet.</td></tr>
+                                        <tr><td colSpan={8} className="text-center py-16 text-muted-foreground">No registrations yet.</td></tr>
                                     ) : registrations.map((reg) => (
                                         <tr key={reg.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                                             <td className="px-5 py-3 font-medium text-foreground">{reg.name}</td>
@@ -276,6 +304,9 @@ export default function AdminDashboard() {
                                                 {reg._createdAt?.toDate ? reg._createdAt.toDate().toLocaleDateString() : "—"}
                                             </td>
                                             <td className="px-5 py-3"><span className="bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full text-xs border border-green-500/20">{reg.status}</span></td>
+                                            <td className="px-5 py-3">
+                                                <Button size="icon" variant="ghost" className="rounded-xl w-8 h-8 hover:text-red-400" onClick={() => handleDelete(reg.id, "registrations")}><Trash2 size={15} /></Button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
