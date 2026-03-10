@@ -14,6 +14,7 @@ import {
     query,
     orderBy,
     serverTimestamp,
+    limit,
     DocumentData,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -27,12 +28,44 @@ export type Collection =
     | "workshops"
     | "registrations";
 
+// ─── Simple In-Memory Cache to Limit Firestore Reads ───────────────────────────
+const cache: Record<string, { data: DocumentData[]; timestamp: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const clearCacheForCollection = (col: Collection) => {
+    Object.keys(cache).forEach((key) => {
+        if (key.startsWith(`${col}_limit_`) || key === col) {
+            delete cache[key];
+        }
+    });
+};
+
 // ─── Read all documents from a collection ────────────────────────────────────
-export async function getCollection(col: Collection): Promise<DocumentData[]> {
+export async function getCollection(
+    col: Collection,
+    forceRefresh = false,
+    limitCount?: number
+): Promise<DocumentData[]> {
+    const finalLimit = limitCount ? Math.min(limitCount, 100) : 100; // Max 100 documents per query to protect free quota
+    const cacheKey = `${col}_limit_${finalLimit}`;
+
+    const now = Date.now();
+    // Use cached data if available and not expired (unless forced to refresh)
+    if (!forceRefresh && cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_TTL) {
+        console.log(`[Firestore] Returning cached data for: ${col} (limit: ${finalLimit})`);
+        return cache[cacheKey].data;
+    }
+
+    console.log(`[Firestore] Fetching fresh data from Firebase for: ${col} (limit: ${finalLimit})`);
     const snap = await getDocs(
-        query(collection(db, col), orderBy("_createdAt", "asc"))
+        query(collection(db, col), orderBy("_createdAt", "asc"), limit(finalLimit))
     );
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    
+    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    
+    // Update the cache
+    cache[cacheKey] = { data, timestamp: now };
+    return data;
 }
 
 // ─── Add a new document ───────────────────────────────────────────────────────
@@ -44,6 +77,7 @@ export async function addItem(
         ...data,
         _createdAt: serverTimestamp(),
     });
+    clearCacheForCollection(col); // Invalidate cache
     return docRef.id;
 }
 
@@ -54,11 +88,13 @@ export async function updateItem(
     data: Record<string, unknown>
 ): Promise<void> {
     await updateDoc(doc(db, col, id), { ...data, _updatedAt: serverTimestamp() });
+    clearCacheForCollection(col); // Invalidate cache
 }
 
 // ─── Delete a document ────────────────────────────────────────────────────────
 export async function deleteItem(col: Collection, id: string): Promise<void> {
     await deleteDoc(doc(db, col, id));
+    clearCacheForCollection(col); // Invalidate cache
 }
 
 // ─── Get all public content in one call (mirrors old /api/data) ───────────────
