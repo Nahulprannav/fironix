@@ -30,46 +30,66 @@ const SUGGESTIONS = [
 const BOT_RESPONSES: Record<string, { text: string; suggestions?: string[] }> = {
     greeting: {
         text: "Hello! 👋 I'm your Fironix assistant. How can I help you today?",
-        suggestions: ["Tell me about Courses", "Internship Opportunities", "How to Register?"]
+        suggestions: ["Explore Courses", "Internship Opportunities", "Register Now"]
     },
-    courses: {
-        text: "We offer premium training in MERN Stack, Cyber Security, AI/ML, and more. Our programs are designed for industry readiness with hands-on projects!",
+    courses_general: {
+        text: "Fironix specializes in Industry-Ready training! Our top programs include MERN Full Stack, Cyber Security (Ethical Hacking), AI/ML, and Data Analytics. Which one interests you?",
         suggestions: ["Course Fees?", "Syllabus details", "Placement Support"]
     },
+    course_fees: {
+        text: "Our course fees are highly competitive and include all study materials and certifications. Generally, professional tracks range from ₹15,000 to ₹35,000 depending on depth and duration. Would you like a detailed quote for a specific course?",
+        suggestions: ["MERN Stack Fees", "Cyber Security Fees", "Scholarships?"]
+    },
+    course_syllabus: {
+        text: "Each program follows a rigorous industry-vetted curriculum. For example, MERN covers everything from React to MongoDB, while Cyber Security includes Network Security and Penetration Testing. I can send you the full PDF syllabus!",
+        suggestions: ["Get MERN Syllabus", "Get AI Syllabus", "Placement Support"]
+    },
+    placement: {
+        text: "Fironix has a dedicated placement cell! We provide resume building, mock interviews, and direct referrals to our hiring partners. Over 90% of our students land jobs within 3-6 months. Ready to start your career?",
+        suggestions: ["Recent Placements", "Hire from us", "Register Now"]
+    },
+    training_mode: {
+        text: "We offer maximum flexibility! You can join our Interactive Online batches (from anywhere) or Classroom Offline batches at our Coimbatore center. Both modes include recorded sessions and 24/7 mentor support.",
+        suggestions: ["Upcoming Batches", "Contact Support"]
+    },
     register: {
-        text: "Registration is simple! Visit our /register page, select your program, and fill in the details. Need help with the form?",
-        suggestions: ["Online/Offline mode?", "Payment options"]
+        text: "Enrolling is easy! Go to /register, pick your course, and fill in the form. Once submitted, our counselor will call you within 24 hours to guide you through the next steps.",
+        suggestions: ["View Registration Form", "Payment modes"]
     },
     internships: {
-        text: "Our Hands-On Practical Internship Program focuses on real-world skills. You'll work on industry-level projects and receive a certificate.",
-        suggestions: ["Is it paid?", "Duration?", "Required skills"]
+        text: "Our 'Hands-On Practical Internship' is a real-world experience program. You'll work on live projects, get mentored by experts, and receive an official certificate upon completion. It's perfect for portfolio building!",
+        suggestions: ["Apply for Internship", "Internship FAQ"]
     },
     contact: {
-        text: "You can reach our support team at ashwini@fironix.in or call +91 6382147517. We're here to help!",
-        suggestions: ["Office location", "Technical support"]
+        text: "Reach us via email at ashwini@fironix.in or call our hotline at +91 6382147517. You can also visit our Coimbatore office during business hours!",
+        suggestions: ["Office location", "Email Support"]
     },
     thanks: {
-        text: "You're very welcome! Is there anything else you'd like to know about Fironix?",
-        suggestions: ["About the Team", "Our Services"]
+        text: "You're very welcome! I'm glad I could help. Do you have any other questions about our programs?",
+        suggestions: ["Browse Courses", "Our Services"]
     },
     farewell: {
-        text: "Goodbye! Have a great day and feel free to reach out anytime. ✨",
+        text: "Goodbye! Have a great day and feel free to reach out anytime you need assistance. ✨",
         suggestions: ["Start over"]
     },
     default: {
-        text: "I'm not quite sure I caught that. Could you try asking about our courses, internships, or registration process?",
-        suggestions: ["Browse Courses", "Internship Info"]
+        text: "I want to be as helpful as possible! Could you please specify if you're asking about Course Fees, Syllabus, Placement, or how to Register?",
+        suggestions: ["View All Courses", "Speak with Staff"]
     },
 };
 
 const INTENTS = [
-    { key: "greeting", patterns: ["hi", "hello", "hey", "good morning", "restart"] },
-    { key: "courses", patterns: ["course", "learn", "study", "training", "mern", "cyber", "ai", "ml", "python", "javascript", "syllabus", "fees"] },
-    { key: "register", patterns: ["register", "apply", "join", "enroll", "form", "admission", "how to"] },
-    { key: "internships", patterns: ["intern", "placement", "job", "career", "certificate"] },
-    { key: "contact", patterns: ["contact", "support", "help", "email", "phone", "address", "call", "office"] },
-    { key: "thanks", patterns: ["thank", "thanks", "helpful", "great", "awesome"] },
-    { key: "farewell", patterns: ["bye", "goodbye", "cya", "exit", "close"] },
+    { key: "greeting", patterns: ["hi", "hello", "hey", "good morning", "restart", "start"] },
+    { key: "course_fees", patterns: ["fee", "cost", "price", "how much", "amount", "payment"] },
+    { key: "course_syllabus", patterns: ["syllabus", "curriculum", "what will i learn", "topics", "content", "learning path"] },
+    { key: "placement", patterns: ["placement", "job", "career", "support", "hiring", "salary", "work", "recruit"] },
+    { key: "training_mode", patterns: ["online", "offline", "hybrid", "mode", "classroom", "live", "center", "location"] },
+    { key: "courses_general", patterns: ["course", "learn", "study", "training", "mern", "stack", "cyber", "ai", "ml", "python", "javascript", "program"] },
+    { key: "register", patterns: ["register", "apply", "join", "enroll", "form", "admission", "how to", "process"] },
+    { key: "internships", patterns: ["intern", "placement", "job", "career", "project", "hands-on", "certificate"] },
+    { key: "contact", patterns: ["contact", "support", "help", "email", "phone", "address", "call", "office", "visit"] },
+    { key: "thanks", patterns: ["thank", "thanks", "helpful", "great", "awesome", "perfect", "good"] },
+    { key: "farewell", patterns: ["bye", "goodbye", "cya", "exit", "close", "see you"] },
 ];
 
 export default function Chatbot() {
