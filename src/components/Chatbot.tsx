@@ -27,26 +27,91 @@ const SUGGESTIONS = [
     "Contact Support",
 ];
 
-const BOT_RESPONSES: Record<string, string> = {
-    "courses": "We offer premium courses in MERN Stack, Cyber Security, AI/ML, Data Analytics, and more! You can view them all on our /courses page.",
-    "register": "You can register for any course, workshop, or internship via our /register page. Just pick your interest and fill in your details!",
-    "internships": "Fironix provides hands-on internships in Software Development, UI/UX Design, Marketing, and Data Science. Check the /internship page for details.",
-    "contact": "You can reach us at ashwini@fironix.in or visit our /contact page to send a direct message.",
-    "default": "I'm not sure I understand. Feel free to ask about our courses, internships, or registration process!",
+const BOT_RESPONSES: Record<string, { text: string; suggestions?: string[] }> = {
+    greeting: {
+        text: "Hello! 👋 I'm your Fironix assistant. How can I help you today?",
+        suggestions: ["Tell me about Courses", "Internship Opportunities", "How to Register?"]
+    },
+    courses: {
+        text: "We offer premium training in MERN Stack, Cyber Security, AI/ML, and more. Our programs are designed for industry readiness with hands-on projects!",
+        suggestions: ["Course Fees?", "Syllabus details", "Placement Support"]
+    },
+    register: {
+        text: "Registration is simple! Visit our /register page, select your program, and fill in the details. Need help with the form?",
+        suggestions: ["Online/Offline mode?", "Payment options"]
+    },
+    internships: {
+        text: "Our Hands-On Practical Internship Program focuses on real-world skills. You'll work on industry-level projects and receive a certificate.",
+        suggestions: ["Is it paid?", "Duration?", "Required skills"]
+    },
+    contact: {
+        text: "You can reach our support team at ashwini@fironix.in or call +91 6382147517. We're here to help!",
+        suggestions: ["Office location", "Technical support"]
+    },
+    thanks: {
+        text: "You're very welcome! Is there anything else you'd like to know about Fironix?",
+        suggestions: ["About the Team", "Our Services"]
+    },
+    farewell: {
+        text: "Goodbye! Have a great day and feel free to reach out anytime. ✨",
+        suggestions: ["Start over"]
+    },
+    default: {
+        text: "I'm not quite sure I caught that. Could you try asking about our courses, internships, or registration process?",
+        suggestions: ["Browse Courses", "Internship Info"]
+    },
 };
+
+const INTENTS = [
+    { key: "greeting", patterns: ["hi", "hello", "hey", "good morning", "restart"] },
+    { key: "courses", patterns: ["course", "learn", "study", "training", "mern", "cyber", "ai", "ml", "python", "javascript", "syllabus", "fees"] },
+    { key: "register", patterns: ["register", "apply", "join", "enroll", "form", "admission", "how to"] },
+    { key: "internships", patterns: ["intern", "placement", "job", "career", "certificate"] },
+    { key: "contact", patterns: ["contact", "support", "help", "email", "phone", "address", "call", "office"] },
+    { key: "thanks", patterns: ["thank", "thanks", "helpful", "great", "awesome"] },
+    { key: "farewell", patterns: ["bye", "goodbye", "cya", "exit", "close"] },
+];
 
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [currentSuggestions, setCurrentSuggestions] = useState<string[]>(SUGGESTIONS);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Initial greeting
+    useEffect(() => {
+        if (messages.length === 0) {
+            setMessages(INITIAL_MESSAGES);
+        }
+    }, []);
 
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }, [messages, isTyping]);
+
+    const getResponse = (text: string) => {
+        const lowerText = text.toLowerCase();
+        let matchedIntent = "default";
+
+        // Find best match based on pattern density
+        let maxPatterns = 0;
+        for (const intent of INTENTS) {
+            const matches = intent.patterns.filter(p => lowerText.includes(p)).length;
+            if (matches > maxPatterns) {
+                maxPatterns = matches;
+                matchedIntent = intent.key;
+            }
+        }
+
+        return BOT_RESPONSES[matchedIntent];
+    };
 
     const handleSend = (text: string) => {
         if (!text.trim()) return;
@@ -62,26 +127,25 @@ export default function Chatbot() {
         setInputValue("");
         setIsTyping(true);
 
-        // Simulate bot response
+        // Natural typing delay
+        const delay = Math.min(1500, Math.max(800, text.length * 20));
+
         setTimeout(() => {
-            const lowerText = text.toLowerCase();
-            let responseText = BOT_RESPONSES.default;
-
-            if (lowerText.includes("course")) responseText = BOT_RESPONSES.courses;
-            else if (lowerText.includes("register")) responseText = BOT_RESPONSES.register;
-            else if (lowerText.includes("internship")) responseText = BOT_RESPONSES.internships;
-            else if (lowerText.includes("contact") || lowerText.includes("support")) responseText = BOT_RESPONSES.contact;
-
+            const response = getResponse(text);
+            
             const botMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: responseText,
+                text: response.text,
                 sender: "bot",
                 timestamp: new Date(),
             };
 
             setMessages((prev) => [...prev, botMsg]);
+            if (response.suggestions) {
+                setCurrentSuggestions(response.suggestions);
+            }
             setIsTyping(false);
-        }, 1000);
+        }, delay);
     };
 
     return (
@@ -142,13 +206,13 @@ export default function Chatbot() {
                         </div>
 
                         {/* Quick Suggestions */}
-                        {messages.length < 4 && !isTyping && (
+                        {currentSuggestions.length > 0 && !isTyping && (
                             <div className="px-5 pb-2 flex flex-wrap gap-2">
-                                {SUGGESTIONS.map((s) => (
+                                {currentSuggestions.map((s) => (
                                     <button
                                         key={s}
                                         onClick={() => handleSend(s)}
-                                        className="text-[11px] bg-secondary/50 hover:bg-primary/20 border border-border/40 hover:border-primary/40 px-3 py-1.5 rounded-full transition-all text-muted-foreground hover:text-primary"
+                                        className="text-[11px] bg-secondary/50 hover:bg-primary/20 border border-border/40 hover:border-primary/40 px-3 py-1.5 rounded-full transition-all text-muted-foreground hover:text-primary whitespace-nowrap"
                                     >
                                         {s}
                                     </button>
