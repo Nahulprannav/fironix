@@ -136,7 +136,7 @@ export default function InternshipSection() {
                 Upcoming Program
               </span>
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                2 Month Practical <span className="gradient-text">Internship Program</span>
+                Hands-On Practical <span className="gradient-text">Internship Program</span>
               </h2>
               <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg">
                 A hands-on internship program designed to provide real-world skills and project experience.

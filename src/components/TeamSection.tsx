@@ -32,6 +32,8 @@ type DynamicTeamMember = {
 const STATIC_TEAM: TeamMember[] = [
   { name: "Aswini B", role: "CEO & Director", image: "/team-photo.jpeg", photoURL: "/team-photo.jpeg", path: "/portfolio/ashwini" },
   { name: "Nahul Prannav S", role: "Co-Founder", image: "/team-photo-n.jpeg", photoURL: "/team-photo-n.jpeg", path: "/portfolio/nahul" },
+  { name: "Abishek Varadharajan", role: "Web Developer", image: "/abishekvm.jpeg", photoURL: "/abishekvm.jpeg", path: "/portfolio/abishek" },
+  { name: "Yogalakshmi.J", role: "Data Science Specialist", image: "/yoga.jpeg", photoURL: "/yoga.jpeg", path: "/portfolio/yoga" },
 ];
 
 function slugify(value: string): string {

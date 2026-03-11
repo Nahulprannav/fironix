@@ -56,7 +56,7 @@ const defaultFieldsForTab: Record<string, string[]> = {
     internships: ["title", "description", "duration", "stipend", "role", "requirements", "skills", "icon"],
     projects: ["title", "description", "techStack", "githubLink", "image", "tags"],
     services: ["title", "description", "details", "features", "slug"],
-    team: ["name", "photoURL", "role", "skills", "experience", "bio"],
+    team: ["name", "photoURL", "role", "email", "phone", "skills", "experience", "bio", "softSkills", "education"],
     workshops: ["title", "description", "date", "time", "location", "seats", "type", "color"],
 };
 
@@ -68,7 +68,8 @@ export default function AdminDashboard() {
     const [newItem, setNewItem] = useState<Record<string, string>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Record<string, string>>({});
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [importJson, setImportJson] = useState("");
     const [importCollection, setImportCollection] = useState<Collection>("courses");
     const [adminUser, setAdminUser] = useState("Admin");
@@ -200,12 +201,23 @@ export default function AdminDashboard() {
         // Use a more robust blob-based download for browser compatibility
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const dataBlob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        
+        // Manual anchor creation for better iOS/mobile support
         const url = window.URL.createObjectURL(dataBlob);
         const link = document.createElement("a");
+        link.style.display = 'none';
         link.href = url;
-        link.download = `Fironix_Registrations_${new Date().toLocaleDateString()}.xlsx`;
+        link.setAttribute('download', `Fironix_Registrations_${new Date().toISOString().split('T')[0]}.xlsx`);
+        
+        document.body.appendChild(link);
         link.click();
-        window.URL.revokeObjectURL(url);
+        
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        toast.success("Excel file generated!");
         toast.success("Excel file generated!");
     };
 
@@ -225,11 +237,11 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-background flex">
-            {/* Sidebar */}
+            {/* Sidebar Desktop */}
             <motion.aside
                 animate={{ width: sidebarOpen ? 260 : 72 }}
                 transition={{ type: "spring", stiffness: 200, damping: 30 }}
-                className="fixed top-0 left-0 h-full bg-card border-r border-border/60 flex flex-col z-40 overflow-hidden"
+                className="hidden md:flex fixed top-0 left-0 h-full bg-card border-r border-border/60 flex-col z-40 overflow-hidden"
             >
                 <div className="flex items-center gap-3 p-5 border-b border-border/60">
                     <ShieldCheck className="text-primary shrink-0" size={32} />
@@ -263,23 +275,66 @@ export default function AdminDashboard() {
                 </div>
             </motion.aside>
 
-            {/* Main */}
-            <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? "ml-[260px]" : "ml-[72px]"} p-8`}>
-                <div className="flex items-center justify-between mb-10">
-                    <div>
-                        <h1 className="font-display text-3xl font-bold text-foreground">
-                            {tab === "home" ? `Welcome, ${adminUser}` : tab.charAt(0).toUpperCase() + tab.slice(1)}
-                        </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Fironix Admin — Firebase CMS</p>
+            {/* Mobile Sidebar Overlay */}
+            {mobileSidebarOpen && (
+                <div className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50" onClick={() => setMobileSidebarOpen(false)} />
+            )}
+
+            {/* Mobile Sidebar */}
+            <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: mobileSidebarOpen ? 0 : "-100%" }}
+                className="md:hidden fixed top-0 left-0 h-full w-[260px] bg-card border-r border-border/60 flex flex-col z-[60] overflow-hidden"
+            >
+                <div className="flex items-center justify-between p-5 border-b border-border/60">
+                    <div className="flex items-center gap-3">
+                        <ShieldCheck className="text-primary" size={32} />
+                        <span className="font-display text-lg font-bold gradient-text">Fironix CMS</span>
                     </div>
-                    <Button variant="outline" size="sm" onClick={loadData} className="gap-2 rounded-xl">
-                        <RefreshCw size={14} /> Refresh
+                    <button onClick={() => setMobileSidebarOpen(false)}><X size={24} /></button>
+                </div>
+                <nav className="flex-1 p-3 space-y-1">
+                    {TABS.map(({ id, label, icon: Icon }) => (
+                        <button
+                            key={id}
+                            onClick={() => { setTab(id as typeof tab); setMobileSidebarOpen(false); }}
+                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${tab === id ? "bg-primary/10 text-primary font-semibold border border-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+                        >
+                            <Icon size={20} />
+                            <span className="text-sm">{label}</span>
+                        </button>
+                    ))}
+                </nav>
+                <div className="p-3 border-t border-border/60">
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-all">
+                        <LogOut size={18} />
+                        <span className="text-sm">Logout</span>
+                    </button>
+                </div>
+            </motion.aside>
+
+            {/* Main */}
+            <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? "md:ml-[260px]" : "md:ml-[72px]"} p-4 md:p-8`}>
+                <div className="flex items-center justify-between mb-8 md:mb-10">
+                    <div className="flex items-center gap-3 md:gap-0">
+                        <button className="md:hidden p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors" onClick={() => setMobileSidebarOpen(true)}>
+                            <LayoutDashboard size={20} />
+                        </button>
+                        <div>
+                            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                                {tab === "home" ? `Welcome, ${adminUser.split('@')[0]}` : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </h1>
+                            <p className="hidden md:block text-muted-foreground text-sm mt-1">Fironix Admin — Firebase CMS</p>
+                        </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={loadData} className="gap-2 rounded-xl px-3 md:px-4">
+                        <RefreshCw size={14} className="md:w-4 md:h-4" /> <span className="hidden xs:inline">Refresh</span>
                     </Button>
                 </div>
 
                 {/* HOME */}
                 {tab === "home" && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <StatsCard label="Courses" count={data.courses?.length || 0} icon={BookOpen} color="bg-primary/10" />
                         <StatsCard label="Internships" count={data.internships?.length || 0} icon={Briefcase} color="bg-blue-500/10" />
                         <StatsCard label="Projects" count={data.projects?.length || 0} icon={FolderOpen} color="bg-green-500/10" />

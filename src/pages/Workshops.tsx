@@ -14,36 +14,7 @@ const WORKSHOP_KEYS: Record<string, string> = {
     "Figma to Framer Motion Conversion": "workshop-figma-framer",
 };
 
-const WORKSHOPS = [
-    {
-        title: "Mastering React 19 State Architecture",
-        description: "An incredibly fast-paced hybrid workshop dissecting the deeply internal mechanics of handling complex asynchronous state.",
-        date: "April 12, 2026", time: "10:00 AM - 4:00 PM EST",
-        location: "Virtual & Fironix HQ", seats: 40, type: "Advanced",
-        color: "hsl(187 80% 50%)", colorClass: "text-primary bg-primary/10 border-primary/20"
-    },
-    {
-        title: "Offensive Penetration Testing 101",
-        description: "Executing complex red-team operations against simulated enterprise networks. Nmap, Metasploit, Active Directory lateral movement.",
-        date: "April 18, 2026", time: "9:00 AM - 5:00 PM EST",
-        location: "Virtual Only", seats: 100, type: "Intermediate",
-        color: "hsl(40 90% 55%)", colorClass: "text-accent bg-accent/10 border-accent/20"
-    },
-    {
-        title: "Zero-Latency Docker Pipelines",
-        description: "Alpine containers, multi-stage caching, and Kubernetes cluster deployment. Stop waiting for builds.",
-        date: "April 25, 2026", time: "1:00 PM - 6:00 PM EST",
-        location: "Virtual Only", seats: 250, type: "Advanced",
-        color: "hsl(210 100% 60%)", colorClass: "text-blue-400 bg-blue-500/10 border-blue-500/20"
-    },
-    {
-        title: "Figma to Framer Motion Conversion",
-        description: "Turn high-end Figma mockups into pixel-perfect React animations using Framer Motion spring physics.",
-        date: "May 02, 2026", time: "11:00 AM - 3:00 PM EST",
-        location: "Virtual & Fironix HQ", seats: 50, type: "Beginner",
-        color: "hsl(320 80% 55%)", colorClass: "text-pink-400 bg-pink-500/10 border-pink-500/20"
-    }
-];
+const WORKSHOPS: any[] = [];
 
 export default function Workshops() {
     const navigate = useNavigate();

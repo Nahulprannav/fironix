@@ -76,7 +76,7 @@ export default function ContactSection() {
     <section id="contact" className="py-24 px-4 relative">
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
       <div className="container mx-auto max-w-5xl relative z-10">
-        <div className="section-shell p-8 md:p-12 relative overflow-hidden">
+        <div className="section-shell p-6 sm:p-10 md:p-14 relative overflow-hidden">
           <div className="absolute right-0 bottom-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px]" />
 
           <motion.div
@@ -95,7 +95,7 @@ export default function ContactSection() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid md:grid-cols-2 gap-8"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12"
           >
             <motion.form variants={fadeUp} onSubmit={handleSubmit} className="glass-panel rounded-2xl p-6 md:p-8 space-y-6 border-glow">
               <div className="space-y-4">

@@ -2,7 +2,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { motion, Variants } from "framer-motion";
-import { Award, Briefcase, Code, Coffee, ExternalLink, Github, Linkedin, Mail, Zap } from "lucide-react";
+import { Award, Briefcase, Code, Coffee, ExternalLink, Github, Linkedin, Mail, Phone, Zap, GraduationCap, Lightbulb } from "lucide-react";
 import { useParams, Link } from "react-router-dom";
 import { TEAM_DATA } from "@/data/teamData";
 
@@ -56,9 +56,13 @@ export default function PortfolioTemplate() {
                     <div className="flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
                         <motion.div variants={fadeUp} className="relative">
                             <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-4 border-background/50 shadow-[0_0_30px_hsl(187_80%_50%_/_0.3)] overflow-hidden bg-muted">
-                                <div className="w-full h-full flex items-center justify-center bg-card text-muted-foreground text-4xl font-display">
-                                    {data.name.charAt(0)}
-                                </div>
+                                {data.photoURL ? (
+                                    <img src={data.photoURL} alt={data.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-card text-muted-foreground text-4xl font-display">
+                                        {data.name.charAt(0)}
+                                    </div>
+                                )}
                             </div>
                             <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-3 rounded-full shadow-lg">
                                 <Code size={24} />
@@ -82,6 +86,13 @@ export default function PortfolioTemplate() {
                                         <Mail size={16} /> Contact Me
                                     </a>
                                 </Button>
+                                {data.phone && (
+                                    <Button variant="outline" className="glass-panel border-glow rounded-full px-6 gap-2" asChild>
+                                        <a href={`tel:${data.phone}`}>
+                                            <Phone size={16} /> {data.phone}
+                                        </a>
+                                    </Button>
+                                )}
                                 <div className="flex gap-2">
                                     {data.socialUrls.github && (
                                         <Button variant="outline" size="icon" className="rounded-full glass-panel border-glow hover:text-primary" asChild>
@@ -126,6 +137,21 @@ export default function PortfolioTemplate() {
                             <h4 className="font-bold text-foreground mb-2">Always Learning</h4>
                             <p className="text-sm text-muted-foreground">Constantly exploring new technologies and frameworks to deliver cutting-edge solutions.</p>
                         </div>
+
+                        {data.softSkills && (
+                            <div className="glass-panel rounded-2xl p-8 border-border/50">
+                                <h3 className="font-display text-2xl font-bold mb-6 flex items-center gap-3">
+                                    <Lightbulb className="text-yellow-500" size={24} /> Soft Skills
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {data.softSkills.map((skill) => (
+                                        <span key={skill} className="px-3 py-1.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-lg text-sm border border-yellow-500/20">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
 
                     <motion.div
@@ -138,7 +164,7 @@ export default function PortfolioTemplate() {
                             <Briefcase className="text-primary" size={24} /> Work Experience
                         </h3>
 
-                        <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-border before:to-transparent">
+                        <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-border before:to-transparent mb-12">
                             {data.experience.map((exp, idx) => (
                                 <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                                     <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-card text-primary shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[0_0_10px_hsl(187_80%_50%_/_0.3)] z-10">
@@ -156,6 +182,19 @@ export default function PortfolioTemplate() {
                                 </div>
                             ))}
                         </div>
+
+                        {data.education && (
+                            <div className="mt-12 pt-12 border-t border-border/30">
+                                <h3 className="font-display text-2xl font-bold mb-8 flex items-center gap-3">
+                                    <GraduationCap className="text-accent" size={24} /> Education
+                                </h3>
+                                <div className="glass-panel p-6 rounded-2xl border border-accent/20 bg-accent/5">
+                                    <h4 className="text-xl font-bold text-foreground mb-1">{data.education.degree}</h4>
+                                    <p className="text-accent font-medium mb-1">{data.education.institution}</p>
+                                    <p className="text-sm text-muted-foreground italic">{data.education.location}</p>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
 
                 </section>
@@ -182,12 +221,15 @@ export default function PortfolioTemplate() {
                                 transition={{ delay: idx * 0.1 }}
                                 className="interactive-card glass-panel rounded-2xl p-6 border-glow flex flex-col"
                             >
-                                <div className="flex justify-between items-start mb-4">
+                                <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
                                     <Button variant="ghost" size="icon" className="hover:text-primary rounded-full" asChild>
                                         <a href={project.link} target="_blank" rel="noreferrer"><ExternalLink size={18} /></a>
                                     </Button>
                                 </div>
+                                {project.period && (
+                                    <div className="text-xs font-semibold text-primary mb-3 uppercase tracking-wider">{project.period}</div>
+                                )}
                                 <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{project.description}</p>
                                 <div className="flex flex-wrap gap-2">
                                     {project.tags.map(tag => (
