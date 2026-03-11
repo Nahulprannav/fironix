@@ -176,56 +176,6 @@ export const TEAM_DATA: Record<string, EmployeeData> = {
             }
         ]
     },
-    "yoga": {
-        id: "yoga",
-        name: "YOGALAKSHMI.J",
-        role: "Data Science Specialist",
-        bio: "Data science student at Christ the King Engineering College with expertise in Python, R, Data Analytics, Machine Learning, and Generative AI. Developed projects in AI-based placement training platform, health monitoring using smart watch data, and smart water management system for factories.",
-        email: "lakshmyogalakshmi8@gmail.com",
-        phone: "9585879669",
-        photoURL: "/yoga.jpeg",
-        socialUrls: {
-            linkedin: "#",
-        },
-        skills: ["Python", "SQL", "C", "Machine Learning", "Deep Learning", "Generative AI", "NLP", "Computer Vision", "Power BI", "Matplotlib", "Seaborn", "TensorFlow", "PyTorch", "Pandas", "Streamlit"],
-        softSkills: ["English (Fluent)", "Hindi (Fluent)", "Public Speaking", "Problem Solving"],
-        education: {
-            degree: "Bachelor of Artificial Intelligence and Data Science",
-            institution: "Anna University (Christ the King Engineering College)",
-            location: "Cuddalore, Tamil Nadu"
-        },
-        experience: [
-            {
-                role: "Campus Ambassador",
-                company: "Rinex",
-                period: "Jan 2025 - Present",
-                description: "Represented Rinex and promoted technical education amongst students."
-            }
-        ],
-        projects: [
-            {
-                title: "Ai based story teller",
-                period: "Jan 2024 - Mar 2024",
-                description: "Developed an AI storyteller program that automatically generates engaging narratives based on human emotion detection and user inputs using NLP and machine learning.",
-                tags: ["AI", "NLP", "Python"],
-                link: "#"
-            },
-            {
-                title: "Water Management in Smart Factories",
-                period: "Mar 2026 - Apr 2026",
-                description: "Developed an intelligent water monitoring system that streams real-time water consumption data and detects abnormal usage in factory environments using MQTT and Node-RED.",
-                tags: ["IoT", "Node-RED", "Python"],
-                link: "#"
-            },
-            {
-                title: "AI-Powered Placement Preparation & Skill Analysis Platform",
-                period: "2026",
-                description: "An AI-driven platform that helps students prepare for campus placements by analyzing skills and providing personalized improvement suggestions in áreas like aptitude and programming.",
-                tags: ["GenAI", "Streamlit", "OpenAI"],
-                link: "#"
-            }
-        ]
-    },
     "ashwini": {
         id: "ashwini",
         name: "ASHWINI B",
