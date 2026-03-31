@@ -14,9 +14,29 @@ const WORKSHOP_KEYS: Record<string, string> = {
     "Figma to Framer Motion Conversion": "workshop-figma-framer",
 };
 
-const WORKSHOPS: any[] = [];
+const WORKSHOPS: any[] = [
+    {
+        title: "Workshop On Cyber Security",
+        desc: "Master the art of cybersecurity - stay alert, stay protected, and outsmart every cyber threat before it strikes. Successful participants receive an Official Workshop completion Certificate.",
+        date: "29 March 2026",
+        time: "9:00 AM - 01:00 PM",
+        location: "Online",
+        seats: "Limited",
+        type: "Advanced",
+        color: "hsl(var(--accent))",
+        colorClass: "text-accent border-accent/20 bg-accent/10",
+    }
+];
 
 export default function Workshops() {
+    useSEO({
+        title: "Tech Workshops",
+        description: "Intensive, mentor-led tech workshops on React, Docker, Cyber Security, and more. Register for free community passes.",
+        keywords: "Tech Workshops, React Workshop, Cyber Security Workshop, Free Tech Events",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: "https://fironix.in/workshops"
+    });
+
     const navigate = useNavigate();
     const [dynamicWorkshops, setDynamicWorkshops] = useState<any[]>([]);
 

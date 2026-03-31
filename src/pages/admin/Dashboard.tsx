@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
     LayoutDashboard, BookOpen, Briefcase, FolderOpen, Settings, Users, LogOut,
-    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon, Code2, Download
+    Plus, Trash2, Pencil, Check, X, ClipboardList, RefreshCw, ChevronRight, ShieldCheck, LucideIcon, Code2, Download, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { onSnapshot, collection, query, orderBy } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import * as XLSX from "xlsx";
 import {
     getCollection,
@@ -23,6 +24,7 @@ type Registration = { id: string; name: string; email: string; phone?: string; t
 
 const TABS: { id: Collection | "registrations" | "home" | "import"; label: string; icon: LucideIcon }[] = [
     { id: "home", label: "Dashboard", icon: LayoutDashboard },
+    { id: "blogs", label: "Blogs", icon: FileText },
     { id: "courses", label: "Courses", icon: BookOpen },
     { id: "internships", label: "Internships", icon: Briefcase },
     { id: "projects", label: "Projects", icon: FolderOpen },
@@ -49,9 +51,10 @@ function StatsCard({ label, count, icon: Icon, color }: { label: string; count: 
 
 type Tab = Collection | "registrations" | "home" | "import";
 
-const CONTENT_COLLECTIONS: Collection[] = ["courses", "internships", "projects", "services", "team", "workshops"];
+const CONTENT_COLLECTIONS: Collection[] = ["blogs", "courses", "internships", "projects", "services", "team", "workshops"];
 
 const defaultFieldsForTab: Record<string, string[]> = {
+    blogs: ["title", "category", "tag", "readTime", "excerpt", "author", "date", "content"],
     courses: ["title", "description", "duration", "price", "requirements", "skills_acquired", "modules"],
     internships: ["title", "description", "duration", "stipend", "role", "requirements", "skills", "icon"],
     projects: ["title", "description", "techStack", "githubLink", "image", "tags"],
@@ -89,22 +92,43 @@ export default function AdminDashboard() {
 
     const loadData = useCallback(async () => {
         try {
-            const [regs, ...colData] = await Promise.all([
-                getCollection("registrations"),
-                ...CONTENT_COLLECTIONS.map((col) => getCollection(col)),
-            ]);
+            const colData = await Promise.all(
+                CONTENT_COLLECTIONS.map((col) => getCollection(col))
+            );
 
             const newData: Record<string, any[]> = {};
             CONTENT_COLLECTIONS.forEach((col, i) => { newData[col] = colData[i]; });
             setData(newData);
-            setRegistrations(regs as Registration[]);
         } catch (err: any) {
             toast.error(err.message || "Failed to load data from Firebase.");
         }
     }, []);
 
     useEffect(() => {
-        if (authChecked) loadData();
+        if (!authChecked) return;
+        
+        loadData();
+
+        // Real-time listener for registrations
+        const q = query(collection(db, "registrations"), orderBy("_createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const regs = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Registration[];
+            
+            setRegistrations(prev => {
+                if (prev.length > 0 && regs.length > prev.length) {
+                    const newRegs = regs.filter(r => !prev.find(p => p.id === r.id));
+                    newRegs.forEach(newReg => {
+                        toast('New Registration', {
+                            description: `${newReg.name} just registered!`,
+                            icon: '🔔',
+                        });
+                    });
+                }
+                return regs;
+            });
+        });
+
+        return () => unsubscribe();
     }, [authChecked, loadData]);
 
     const handleLogout = async () => {

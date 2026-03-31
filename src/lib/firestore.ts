@@ -20,6 +20,7 @@ import {
 import { db } from "./firebase";
 
 export type Collection =
+    | "blogs"
     | "courses"
     | "internships"
     | "projects"
@@ -106,8 +107,9 @@ export async function deleteItem(col: Collection, id: string): Promise<void> {
 
 // ─── Get all public content in one call (mirrors old /api/data) ───────────────
 export async function getPublicData() {
-    const [courses, services, internships, projects, team, workshops] =
+    const [blogs, courses, services, internships, projects, team, workshops] =
         await Promise.all([
+            getCollection("blogs"),
             getCollection("courses"),
             getCollection("services"),
             getCollection("internships"),
@@ -115,7 +117,7 @@ export async function getPublicData() {
             getCollection("team"),
             getCollection("workshops"),
         ]);
-    return { courses, services, internships, projects, team, workshops };
+    return { blogs, courses, services, internships, projects, team, workshops };
 }
 
 // ─── Submit a registration ────────────────────────────────────────────────────

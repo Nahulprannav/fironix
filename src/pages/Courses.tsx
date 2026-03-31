@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 const STATIC_COURSES = [
     {
@@ -132,6 +133,14 @@ const STATIC_COURSES = [
 ];
 
 export default function Courses() {
+    useSEO({
+        title: "Enterprise Courses",
+        description: "Transform your career with Fironix's enterprise training programs in Web Development, Cyber Security, ML, Game Development, and Cloud Computing.",
+        keywords: "IT Training, Coding Bootcamp, Web Dev Course, Cybersecurity Training, Machine Learning Course",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: "https://fironix.in/courses"
+    });
+
     const navigate = useNavigate();
     const [dynamicCourses, setDynamicCourses] = useState<any[]>([]);
 

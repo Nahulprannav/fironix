@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { motion, Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getCollection } from "@/lib/firestore";
+import { useSEO } from "@/hooks/useSEO";
 
 const STATIC_SERVICES = [
   {

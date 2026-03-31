@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 
 import { BLOG_POSTS as POSTS } from "@/data/blogData";
+import { useSEO } from "@/hooks/useSEO";
 
 const TAG_COLORS: Record<string, string> = {
     engineering: "text-primary bg-primary/10 border-primary/20",
@@ -21,6 +22,14 @@ export default function BlogDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const post = POSTS.find(p => p.id.toString() === id);
+
+    useSEO({
+        title: post ? `${post.title} | Fironix Blog` : "Post Not Found",
+        description: post ? post.excerpt : "Read insightful engineering articles from Fironix.",
+        keywords: post ? `${post.category}, ${post.tag}, Tech Blog` : "Blog, Engineering",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: `https://fironix.in/blog/${id || ""}`
+    });
 
     if (!post) {
         return (
@@ -73,10 +82,10 @@ export default function BlogDetail() {
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary"><Twitter size={18} /></Button>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary"><Linkedin size={18} /></Button>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary"><Facebook size={18} /></Button>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary"><Share2 size={18} /></Button>
+                                <Button variant="ghost" size="icon" aria-label="Share on Twitter" className="rounded-full hover:bg-primary/10 hover:text-primary"><Twitter size={18} /></Button>
+                                <Button variant="ghost" size="icon" aria-label="Share on LinkedIn" className="rounded-full hover:bg-primary/10 hover:text-primary"><Linkedin size={18} /></Button>
+                                <Button variant="ghost" size="icon" aria-label="Share on Facebook" className="rounded-full hover:bg-primary/10 hover:text-primary"><Facebook size={18} /></Button>
+                                <Button variant="ghost" size="icon" aria-label="Share Post" className="rounded-full hover:bg-primary/10 hover:text-primary"><Share2 size={18} /></Button>
                             </div>
                         </div>
                     </motion.header>

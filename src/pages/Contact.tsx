@@ -1,8 +1,17 @@
 import Navbar from "@/components/Navbar";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import { useSEO } from "@/hooks/useSEO";
 
 const Contact = () => {
+  useSEO({
+    title: "Contact Us",
+    description: "Get in touch with Fironix for technology solutions, consulting, and collaboration opportunities.",
+    keywords: "Contact Fironix, Tech Support, IT Consulting Contact",
+    ogImage: "https://fironix.in/logo.png",
+    ogUrl: "https://fironix.in/contact"
+  });
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Background */}

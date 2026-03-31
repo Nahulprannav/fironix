@@ -5,6 +5,7 @@ import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { getCollection } from "@/lib/firestore";
+import { useSEO } from "@/hooks/useSEO";
 
 const STATIC_PROJECTS: Array<{
     title: string;
@@ -16,6 +17,14 @@ const STATIC_PROJECTS: Array<{
 }> = [];
 
 export default function Projects() {
+    useSEO({
+        title: "Our Portfolio",
+        description: "Explore Fironix's curated showcase of innovative software, web, and data projects.",
+        keywords: "Software Portfolio, Tech Projects, Web Development Portfolio, Tech Case Studies",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: "https://fironix.in/projects"
+    });
+
     const [dynamicProjects, setDynamicProjects] = useState<any[]>([]);
 
     useEffect(() => {

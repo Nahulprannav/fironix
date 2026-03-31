@@ -2,8 +2,10 @@ import { useState } from "react";
 import { SITE_NAME } from "@/lib/site";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Briefcase, ChevronRight, Wrench, X } from "lucide-react";
+import { BookOpen, Briefcase, ChevronRight, Wrench, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const QUICK_LINKS = [
   { label: "Courses", href: "/courses" },
@@ -75,17 +77,17 @@ export default function Footer() {
         >
           <div className="glass-panel rounded-3xl p-8 md:p-10 border-glow">
             {/* Top row */}
-            <div className="flex flex-col md:flex-row items-start justify-between gap-10 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
               {/* Brand */}
-              <div className="shrink-0">
+              <div className="col-span-1 sm:col-span-2 md:col-span-1">
                 <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3 group mb-4">
                   <img src="/logo.png" alt={SITE_NAME} className="h-8 w-8 object-contain drop-shadow-[0_0_8px_hsl(187_80%_50%_/_0.8)] group-hover:scale-110 transition-transform" />
                   <span className="font-display text-xl font-bold gradient-text tracking-wider">FIRONIX</span>
                 </Link>
-                <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">Building the future of technology — one engineer at a time.</p>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-6">Building the future of technology — one engineer at a time.</p>
                 <Button
                   onClick={() => setShowPicker(true)}
-                  className="mt-5 box-glow rounded-full px-6 text-sm hover:-translate-y-0.5 transition-transform"
+                  className="box-glow rounded-full px-6 text-sm hover:-translate-y-0.5 transition-transform"
                 >
                   Register Now ✨
                 </Button>
@@ -94,7 +96,7 @@ export default function Footer() {
               {/* Quick links */}
               <div>
                 <h4 className="font-bold text-sm text-foreground uppercase tracking-widest mb-4">Quick Links</h4>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {QUICK_LINKS.map(({ label, href }) => (
                     <Link key={href} to={href} className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-0.5 inline-block">{label}</Link>
                   ))}
@@ -106,8 +108,23 @@ export default function Footer() {
                 <h4 className="font-bold text-sm text-foreground uppercase tracking-widest mb-4">Contact</h4>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p><span className="text-foreground font-medium">Email:</span> ashwini@fironix.in</p>
+                  <p><span className="text-foreground font-medium">Phone:</span> +91 6382147517</p>
                   <p><span className="text-foreground font-medium">Admin:</span> <Link to="/admin/login" className="text-primary hover:underline">Login →</Link></p>
                 </div>
+              </div>
+
+              {/* Newsletter */}
+              <div>
+                <h4 className="font-bold text-sm text-foreground uppercase tracking-widest mb-4">Newsletter</h4>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">Subscribe to get the latest tech insights and course updates.</p>
+                <form className="flex gap-2" onSubmit={(e) => { 
+                    e.preventDefault(); 
+                    toast.success("Subscribed successfully!"); 
+                    (e.target as HTMLFormElement).reset(); 
+                  }}>
+                  <Input required type="email" placeholder="Email address" className="glass-panel border-border/60 h-10 w-full" />
+                  <Button type="submit" size="icon" className="h-10 w-10 shrink-0 box-glow"><Send size={16} /></Button>
+                </form>
               </div>
             </div>
 

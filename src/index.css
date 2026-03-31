@@ -60,11 +60,11 @@
     @apply bg-background text-foreground antialiased font-sans;
     font-family: "Sora", sans-serif;
     min-height: 100vh;
-    background-image:
-      radial-gradient(circle at 12% 16%, hsl(var(--primary) / 0.16), transparent 38%),
-      radial-gradient(circle at 88% 12%, hsl(var(--accent) / 0.12), transparent 35%),
-      radial-gradient(circle at 50% 82%, hsl(220 80% 45% / 0.18), transparent 42%),
-      linear-gradient(165deg, hsl(230 60% 6%), hsl(229 57% 5%) 48%, hsl(232 64% 4%));
+    background-color: hsl(var(--background));
+    background-image: 
+      radial-gradient(circle at 15% 50%, hsl(var(--primary) / 0.15), transparent 40%),
+      radial-gradient(circle at 85% 30%, hsl(var(--accent) / 0.15), transparent 40%),
+      radial-gradient(circle at 50% 100%, hsl(220 80% 45% / 0.2), transparent 50%);
     background-attachment: fixed;
   }
 
@@ -116,9 +116,11 @@
   }
 
   .glass-panel {
-    background: linear-gradient(145deg, hsl(var(--card) / 0.72), hsl(var(--card) / 0.5));
-    border: 1px solid hsl(var(--border) / 0.8);
-    backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, hsl(var(--card) / 0.6) 0%, hsl(var(--card) / 0.3) 100%);
+    border: 1px solid hsl(var(--border) / 0.5);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   }
 
   .section-shell {
@@ -169,6 +171,7 @@
       linear-gradient(hsl(var(--border) / 0.22) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--border) / 0.22) 1px, transparent 1px);
     background-size: 42px 42px;
+    -webkit-mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
     mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
   }
 

@@ -197,9 +197,19 @@ const servicesData: Record<string, ServiceData> = {
     },
 };
 
+import { useSEO } from "@/hooks/useSEO";
+
 export default function ServiceDetails() {
     const { id } = useParams<{ id: string }>();
     const service = id ? servicesData[id] : null;
+
+    useSEO({
+        title: service ? `${service.title} | Fironix` : "Service Not Found",
+        description: service ? service.desc : "Explore detailed Fironix services and enterprise solutions.",
+        keywords: service ? service.features.join(", ") : "IT Services, Tech Solutions",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: `https://fironix.in/services/${id || ""}`
+    });
 
     if (!service) {
         return (

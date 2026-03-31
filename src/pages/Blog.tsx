@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Calendar, User, Tag, ArrowRight, Clock } from "lucide-react";
 
 import { BLOG_POSTS as POSTS, BlogPost } from "@/data/blogData";
+import { useSEO } from "@/hooks/useSEO";
 
 const TAG_COLORS: Record<string, string> = {
     engineering: "text-primary bg-primary/10 border-primary/20",
@@ -17,6 +18,14 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 export default function Blog() {
+    useSEO({
+        title: "Engineering Blog",
+        description: "Fironix engineering insights, tutorials, deep dives, and career guides written by our expert instructors.",
+        keywords: "Tech Blog, Coding Tutorials, Engineering Insights, Cyber Security Guides",
+        ogImage: "https://fironix.in/logo.png",
+        ogUrl: "https://fironix.in/blog"
+    });
+
     return (
         <div className="min-h-screen bg-background flex flex-col pt-24 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />

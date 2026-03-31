@@ -133,7 +133,7 @@ export default function Chatbot() {
         return BOT_RESPONSES[matchedIntent];
     };
 
-    const handleSend = (text: string) => {
+    const handleSend = async (text: string) => {
         if (!text.trim()) return;
 
         const userMsg: Message = {
@@ -147,25 +147,53 @@ export default function Chatbot() {
         setInputValue("");
         setIsTyping(true);
 
-        // Natural typing delay
-        const delay = Math.min(1500, Math.max(800, text.length * 20));
+        try {
+            // Attempt to connect to local Ollama API for generative response
+            const response = await fetch("http://localhost:11434/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "llama3", 
+                    prompt: `You are Fironix Assistant, a helpful AI for the technology company Fironix. Keep answers concise, friendly. The company provides web design, software development, data processing, and internships.\nUser: ${text}\nAssistant:`,
+                    stream: false
+                }),
+            });
 
-        setTimeout(() => {
-            const response = getResponse(text);
+            if (!response.ok) throw new Error("Ollama API failed");
+
+            const data = await response.json();
             
             const botMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: response.text,
+                text: data.response || "I'm having trouble thinking right now.",
                 sender: "bot",
                 timestamp: new Date(),
             };
 
             setMessages((prev) => [...prev, botMsg]);
-            if (response.suggestions) {
-                setCurrentSuggestions(response.suggestions);
-            }
+            setCurrentSuggestions(["Tell me about Courses", "Contact Support"]);
             setIsTyping(false);
-        }, delay);
+
+        } catch (error) {
+            // Fallback to static responses if Ollama is unavailable
+            console.log("Falling back to static responses (Ollama not found/running)");
+            setTimeout(() => {
+                const response = getResponse(text);
+                
+                const botMsg: Message = {
+                    id: (Date.now() + 1).toString(),
+                    text: response.text,
+                    sender: "bot",
+                    timestamp: new Date(),
+                };
+
+                setMessages((prev) => [...prev, botMsg]);
+                if (response.suggestions) {
+                    setCurrentSuggestions(response.suggestions);
+                }
+                setIsTyping(false);
+            }, 800);
+        }
     };
 
     return (
