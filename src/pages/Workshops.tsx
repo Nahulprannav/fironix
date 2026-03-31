@@ -6,6 +6,7 @@ import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getCollection } from "@/lib/firestore";
+import { useSEO } from "@/hooks/useSEO";
 
 const WORKSHOP_KEYS: Record<string, string> = {
     "Mastering React 19 State Architecture": "workshop-react-19",
